@@ -8,7 +8,7 @@
     <!-- 필수 라이브러리 로드 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
-    <!-- 마우스 오버 없이 차트 위에 값을 표시하기 위한 DataLabels 플러그인 -->
+    <!-- DataLabels 플러그인 -->
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script> 
     <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script> 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script> 
@@ -102,9 +102,7 @@
         <button class="tab-btn" onclick="openTab('supplierTab', this)">협력사 수입검사 요약</button>
     </div>
 
-    <!-- ========================================== -->
     <!-- 탭 1: MSA Type 1 Gage Study (Cg/Cgk) -->
-    <!-- ========================================== -->
     <div id="cgkTab" class="tab-content active">
         <div class="controls">
             <div class="control-group">
@@ -125,9 +123,7 @@
         <div id="detailDashboardCgk"></div>
     </div>
 
-    <!-- ========================================== -->
     <!-- 탭 2: CPK / PPK / 관리도 -->
-    <!-- ========================================== -->
     <div id="cpkTab" class="tab-content">
         <div class="controls">
             <div class="control-group"><label>엑셀 업로드 (.xlsx)</label><input type="file" id="excelFileCpk" accept=".xlsx, .xls"></div>
@@ -168,9 +164,7 @@
         <div id="allCategoriesViewCpk" class="hidden"><div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px;" id="allChartsGridCpk"></div></div>
     </div>
 
-    <!-- ========================================== -->
     <!-- 탭 3: 협력사 관리 및 수입검사 Summary -->
-    <!-- ========================================== -->
     <div id="supplierTab" class="tab-content">
         <div class="controls">
             <div class="control-group">
@@ -198,7 +192,6 @@
                 <div class="chart-box" style="height: 450px;"><canvas id="supChart2"></canvas></div>
             </div>
             <div class="chart-row">
-                <!-- 파이 차트가 우측 범례 공간을 확보하도록 Flex 비율 수정 -->
                 <div class="chart-box" style="flex: 1; height: 450px;"><canvas id="supChart3"></canvas></div>
                 <div class="chart-box" style="flex: 1; height: 450px;"><canvas id="supChart4"></canvas></div>
             </div>
@@ -237,13 +230,14 @@
     Chart.defaults.font.weight = 'bold'; 
     Chart.defaults.color = '#333';
     
-    // 🔥 데이터 라벨 기본 셋팅 (겹침 방지 및 가독성을 위해 흰색 반투명 박스 처리)
+    // 🔥 데이터 라벨 최적화: 배경 박스 제거하고 흰색 '테두리(Halo)' 기법 적용
     Chart.defaults.plugins.datalabels = {
-        display: false, // 기본은 끄고 개별 차트에서 켬
-        backgroundColor: 'rgba(255, 255, 255, 0.85)',
-        borderRadius: 4,
-        padding: 4,
-        font: { weight: 'bold', size: 14 }
+        display: false, // 기본적으로 끄고 필요할 때만 켬
+        color: '#333',
+        textStrokeColor: '#fff', // 겹치는 선 방어용 흰색 외곽선
+        textStrokeWidth: 4,      // 외곽선 두께
+        font: { weight: '900', size: 14 },
+        clamp: true // 글자가 차트 밖으로 잘리지 않게 안으로 유지
     };
 
     function checkPassword() {
@@ -389,24 +383,24 @@
             },
             options: { 
                 responsive: true, maintainAspectRatio: false,
-                scales: { x: { ticks: { autoSkip: false, maxRotation: 35, minRotation: 35 } } }, // 🔥 X축 기울기 35도로 확대
+                scales: { x: { ticks: { autoSkip: false, maxRotation: 35, minRotation: 35 } } },
                 plugins: { 
                     title: { display: true, text: 'Project 별 수입검사 및 불량 현황', font: {size: 18} },
-                    datalabels: { display: true, color: '#000', formatter: function(val) { return val > 0 ? val : ''; } } 
+                    datalabels: { display: true, formatter: function(val) { return val > 0 ? val : ''; } } 
                 } 
             }
         });
 
-        // 차트 2: Project 개선율
+        // 차트 2: Project 개선율 (콤보 차트 위치 분리)
         let improveRates = projLabels.map(p => projMap[p].ng > 0 ? (projMap[p].improved / projMap[p].ng) * 100 : 100);
         supChartsObj.chart2 = new Chart(document.getElementById('supChart2'), {
             type: 'bar',
             data: {
                 labels: projLabels,
                 datasets: [
-                    // 🔥 선 그래프는 '아래' 배치
-                    { type: 'line', label: '개선율(%)', data: improveRates, borderColor: '#0f9d58', borderWidth: 3, yAxisID: 'y1', datalabels: { align: 'bottom', anchor: 'center', offset: 10, formatter: (v) => v.toFixed(0) + '%' } },
-                    // 🔥 막대 그래프는 '위' 배치
+                    // 🔥 선 그래프 라벨은 선 '아래(bottom)'로 물리적 위치 분리
+                    { type: 'line', label: '개선율(%)', data: improveRates, borderColor: '#0f9d58', borderWidth: 3, yAxisID: 'y1', datalabels: { align: 'bottom', anchor: 'center', offset: 8, color: '#0f9d58', formatter: (v) => v.toFixed(0) + '%' } },
+                    // 🔥 막대 그래프 라벨은 막대 '위(top)'로 배치
                     { type: 'bar', label: '불량 건수', data: projLabels.map(p => projMap[p].ng), backgroundColor: '#ffcc80', yAxisID: 'y', datalabels: { align: 'top', anchor: 'end', formatter: function(val) { return val > 0 ? val : ''; } } }
                 ]
             },
@@ -428,7 +422,7 @@
         let worstSuppliers = sortedSuppliers.slice(0, 5);
         let worstNgData = worstSuppliers.map(s => supMap[s].ng);
 
-        // 차트 3: 파이 차트 (🔥 우측 Legend 커스텀으로 지시하신 빈 공간 활용)
+        // 차트 3: 파이 차트 (🔥 퍼센트 라벨을 우측 빈 공간으로 이동)
         supChartsObj.chart3 = new Chart(document.getElementById('supChart3'), {
             type: 'pie',
             data: {
@@ -437,12 +431,12 @@
             },
             options: { 
                 responsive: true, maintainAspectRatio: false, 
-                layout: { padding: { right: 20 } },
+                layout: { padding: { right: 30 } },
                 plugins: { 
                     title: { display: true, text: '불량 누적 WORST 협력사 비중', font: {size: 18} },
-                    datalabels: { display: false }, // 🔥 좁은 파이 내부 라벨 숨김 처리
+                    datalabels: { display: false }, // 차트 내부 데이터 라벨 숨김
                     legend: {
-                        position: 'right', // 🔥 우측 빈 공간으로 이동
+                        position: 'right', // 💡 사용자 요청 우측 빈공간에 범례로 퍼센트 텍스트 배치
                         labels: {
                             font: { size: 15, weight: 'bold' },
                             padding: 20,
@@ -455,13 +449,12 @@
                                         const style = meta.controller.getStyle(i);
                                         const value = data.datasets[0].data[i];
                                         const percentage = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0%';
-                                        // 범례 텍스트에 퍼센트와 건수 포함
                                         return {
                                             text: `${label} : ${percentage} (${value}건)`,
                                             fillStyle: style.backgroundColor,
                                             strokeStyle: style.borderColor,
                                             lineWidth: style.borderWidth,
-                                            hidden: isNaN(data.datasets[0].data[i]) || meta.data[i].hidden,
+                                            hidden: isNaN(value) || meta.data[i].hidden,
                                             index: i
                                         };
                                     });
@@ -477,13 +470,13 @@
         let supLabels = sortedSuppliers;
         let supRates = supLabels.map(s => (supMap[s].ng / supMap[s].total) * 100);
         
-        // 차트 4: 협력사별 누적 불량률
+        // 차트 4: 협력사별 누적 불량률 (콤보 차트 위치 분리)
         supChartsObj.chart4 = new Chart(document.getElementById('supChart4'), {
             type: 'bar',
             data: {
                 labels: supLabels,
                 datasets: [
-                    { type: 'line', label: '불량률(%)', data: supRates, borderColor: '#4285f4', borderWidth: 3, yAxisID: 'y1', datalabels: { display: true, align: 'bottom', offset: 10, formatter: (v) => v > 0 ? v.toFixed(1) + '%' : '' } },
+                    { type: 'line', label: '불량률(%)', data: supRates, borderColor: '#4285f4', borderWidth: 3, yAxisID: 'y1', datalabels: { display: true, align: 'bottom', anchor: 'center', offset: 8, color: '#4285f4', formatter: (v) => v > 0 ? v.toFixed(1) + '%' : '' } },
                     { type: 'bar', label: '가공품(검사) 수량', data: supLabels.map(s => supMap[s].total), backgroundColor: '#a5d6a7', yAxisID: 'y', datalabels: { display: true, align: 'top', anchor: 'end' } },
                     { type: 'line', label: '목표 불량률 (3%)', data: supLabels.map(()=>3), borderColor: 'red', borderWidth: 2, borderDash: [5, 5], fill: false, pointRadius: 0, yAxisID: 'y1', datalabels: { display: false } }
                 ]
@@ -511,7 +504,7 @@
             data: {
                 labels: monthLabels,
                 datasets: [
-                    { label: '월별 평균 불량률(%)', data: monthRates, borderColor: '#3498db', backgroundColor: '#3498db', fill: false, tension: 0.1, borderWidth: 3, datalabels: { display: true, align: 'bottom', offset: 10, formatter: (v) => v.toFixed(1) + '%' } },
+                    { label: '월별 평균 불량률(%)', data: monthRates, borderColor: '#3498db', backgroundColor: '#3498db', fill: false, tension: 0.1, borderWidth: 3, datalabels: { display: true, align: 'top', offset: 8, color: '#3498db', formatter: (v) => v.toFixed(1) + '%' } },
                     { label: '목표 불량률 (3%)', data: monthLabels.map(()=>3), borderColor: 'red', borderWidth: 2, borderDash: [5, 5], fill: false, pointRadius: 0, datalabels: { display: false } }
                 ]
             },
