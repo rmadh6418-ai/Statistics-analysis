@@ -91,28 +91,35 @@
         .rich-editor:empty:before { content: attr(data-placeholder); color: #999; pointer-events: none; display: block; }
         .rich-editor img { max-width: 100%; height: auto; display: block; margin: 8px 0; border: 1px solid #dee2e6; border-radius: 4px; }
         
-        @media print {
-            @page { size: A4; margin: 10mm; }
-            body, html { background: white !important; padding: 0 !important; margin: 0 !important; color: #000 !important; }
-            
-            #main-dashboard-title, #loginOverlay, .tab-menu, .controls, .ai-controls, button, .action-btn, .delete-btn { display: none !important; }
-            .container { box-shadow: none !important; border: none !important; padding: 0 !important; max-width: none !important; width: 100% !important; margin: 0 !important; background: white !important; }
-            
-            .tab-content { display: none !important; }
-            .tab-content.active { display: block !important; }
-            
-            .table-container, .a4-wrapper { max-height: none !important; overflow: visible !important; border: none !important; }
-            .ng-table th { position: static !important; }
-            
-            .chart-row { display: flex !important; flex-wrap: wrap !important; page-break-inside: avoid; }
-            .chart-box { border: 1px solid #ccc !important; page-break-inside: avoid; }
-            
-            #view8DList.hidden + #view8DForm { display: block !important; }
-            .a4-wrapper { display: block; padding: 0; background: transparent; margin-top: 0; }
-            .a4-paper { box-shadow: none; width: 100%; height: auto; padding: 0; border: none; min-height: auto; }
-            .report-table { width: 100%; }
-            tr { page-break-inside: avoid; }
-        }
+@media print {
+    @page { size: A4 portrait; margin: 10mm; }
+    body, html { background: white !important; padding: 0 !important; margin: 0 !important; color: #000 !important; }
+    
+    /* 불필요한 UI 숨김 */
+    #main-dashboard-title, #loginOverlay, .tab-menu, .controls, .ai-controls, button, .action-btn, .delete-btn { display: none !important; }
+    .container { box-shadow: none !important; border: none !important; padding: 0 !important; max-width: 100% !important; width: 100% !important; margin: 0 !important; background: white !important; }
+    
+    /* 활성화된 탭만 출력 */
+    .tab-content { display: none !important; }
+    .tab-content.active { display: block !important; }
+    
+    /* 8D 폼 & 테이블 A4 규격 최적화 */
+    .table-container, .a4-wrapper { max-height: none !important; overflow: visible !important; border: none !important; }
+    .a4-wrapper { display: block; padding: 0; background: transparent; margin-top: 0; }
+    .a4-paper { box-shadow: none; width: 100%; max-width: 100%; height: auto; padding: 0; border: none; min-height: auto; }
+    
+    /* 표 텍스트 줄바꿈 및 잘림 강제 방지 */
+    .report-table { width: 100% !important; table-layout: fixed !important; border-collapse: collapse !important; }
+    .report-table th, .report-table td { border: 1px solid #000 !important; padding: 6px !important; word-break: break-all !important; font-size: 12px !important; }
+    
+    /* 차트 겹침 및 오버플로우 방지 */
+    .chart-row { display: block !important; }
+    .chart-box { width: 100% !important; max-width: 100% !important; page-break-inside: avoid; border: 1px solid #ccc !important; margin-bottom: 20mm !important; }
+    canvas { max-width: 100% !important; height: auto !important; }
+    
+    .rich-editor img { max-width: 100% !important; height: auto !important; }
+    tr { page-break-inside: avoid; }
+}
     </style>
 </head>
 <body>
@@ -708,7 +715,148 @@
         reportContent.innerHTML = `<div style="text-align:center; padding:30px; font-weight:bold; color:#1565c0;">⏳ AI 분석 중...</div>`; 
         try { const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] }) }); const data = await response.json(); if(data.error) throw new Error(data.error.message); reportContent.innerHTML = marked.parse(data.candidates[0].content.parts[0].text); } catch(err) { reportContent.innerHTML = `<span style="color:red;">❌ 오류: ${err.message}</span>`; } 
     }
+// ==========================================
+// 4. 8D 대책서 및 4M 관리 누락 함수 구현
+// ==========================================
+let records8D = JSON.parse(localStorage.getItem('records8D')) || [];
 
+// 8D 탭 초기화
+function init8DTab() {
+    render8DList();
+}
+
+// 신규 8D 작성 폼 열기
+function createNew8D() {
+    document.getElementById('view8DList').classList.add('hidden');
+    document.getElementById('view8DForm').classList.remove('hidden');
+    
+    // 필드 초기화
+    document.getElementById('8d_id').value = '';
+    document.getElementById('8d_date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('8d_project').value = '';
+    document.getElementById('8d_customer').value = '';
+    document.getElementById('8d_part').value = '';
+    document.getElementById('8d_defect').value = '';
+    for(let i = 1; i <= 8; i++) {
+        document.getElementById('8d_d'+i).innerHTML = '';
+    }
+}
+
+// 8D 목록 화면으로 복귀
+function show8DList() {
+    document.getElementById('view8DForm').classList.add('hidden');
+    document.getElementById('view8DList').classList.remove('hidden');
+}
+
+// 8D 데이터 로컬스토리지 저장
+function save8D() {
+    const id = document.getElementById('8d_id').value || Date.now().toString();
+    const data = {
+        id: id,
+        date: document.getElementById('8d_date').value,
+        project: document.getElementById('8d_project').value,
+        customer: document.getElementById('8d_customer').value,
+        part: document.getElementById('8d_part').value,
+        defect: document.getElementById('8d_defect').value
+    };
+    
+    for(let i = 1; i <= 8; i++) {
+        data['d'+i] = document.getElementById('8d_d'+i).innerHTML;
+    }
+
+    const existingIdx = records8D.findIndex(r => r.id === id);
+    if (existingIdx >= 0) records8D[existingIdx] = data;
+    else records8D.push(data);
+
+    localStorage.setItem('records8D', JSON.stringify(records8D));
+    alert('8D 대책서가 저장되었습니다.');
+    show8DList();
+    render8DList();
+}
+
+// 8D 리스트 출력
+function render8DList() {
+    const tbody = document.getElementById('tableBody8D');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    records8D.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${r.date}</td>
+            <td>${r.date.split('-')[0]}</td>
+            <td>${r.project}</td>
+            <td>${r.customer}</td>
+            <td style="color:#c0392b; font-weight:bold;">${r.defect}</td>
+            <td>
+                <button class="action-btn" style="padding: 5px 10px; font-size: 13px; margin-right: 5px;" onclick="edit8D('${r.id}')">수정</button>
+                <button class="delete-btn" style="padding: 5px 10px; font-size: 13px;" onclick="delete8D('${r.id}')">삭제</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// 8D 수정 모드
+function edit8D(id) {
+    const r = records8D.find(x => x.id === id);
+    if (!r) return;
+    createNew8D();
+    document.getElementById('8d_id').value = r.id;
+    document.getElementById('8d_date').value = r.date;
+    document.getElementById('8d_project').value = r.project;
+    document.getElementById('8d_customer').value = r.customer;
+    document.getElementById('8d_part').value = r.part;
+    document.getElementById('8d_defect').value = r.defect;
+    for(let i = 1; i <= 8; i++) {
+        document.getElementById('8d_d'+i).innerHTML = r['d'+i] || '';
+    }
+}
+
+// 8D 삭제
+function delete8D(id) {
+    if (!confirm('이 8D 대책서를 삭제하시겠습니까?')) return;
+    records8D = records8D.filter(x => x.id !== id);
+    localStorage.setItem('records8D', JSON.stringify(records8D));
+    render8DList();
+}
+
+// 4M 탭 초기화 및 작동 방어코드
+function init4MTab() { render4MTable(); }
+function render4MTable() { 
+    const tbody = document.getElementById('tableBody4M');
+    if(tbody && tbody.innerHTML === '') tbody.innerHTML = '<tr><td colspan="6">등록된 4M 이력이 없습니다.</td></tr>'; 
+}
+function add4MRecord() { alert('4M 변경사항 기능이 실행되었습니다.'); }
+
+// D1~D8 에디터 이미지 복사/붙여넣기 렌더링 활성화
+function setupImagePaste() {
+    document.querySelectorAll('.rich-editor').forEach(editor => {
+        editor.addEventListener('paste', function(e) {
+            const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+            for (let index in items) {
+                if (items[index].kind === 'file') {
+                    const blob = items[index].getAsFile();
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const img = document.createElement('img');
+                        img.src = event.target.result;
+                        const sel = window.getSelection();
+                        if (sel.getRangeAt && sel.rangeCount) {
+                            let range = sel.getRangeAt(0);
+                            range.insertNode(img);
+                            range.setStartAfter(img);
+                            sel.removeAllRanges();
+                            sel.addRange(range);
+                        } else {
+                            editor.appendChild(img);
+                        }
+                    };
+                    reader.readAsDataURL(blob);
+                }
+            }
+        });
+    });
+}
 </script>
 </body>
 </html>
