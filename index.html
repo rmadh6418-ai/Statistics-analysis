@@ -73,7 +73,6 @@
         }
         .login-box { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); text-align: center; width: 320px; }
         .login-box h2 { margin-top: 0; color: #343a40; margin-bottom: 10px; font-weight: bold; }
-        /* 💡 수정됨: placeholder에서 비밀번호 힌트 제거 */
         .login-box input { width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ced4da; border-radius: 6px; box-sizing: border-box; text-align: center; letter-spacing: 2px; font-weight: bold; }
         .login-box button { width: 100%; padding: 12px; background: #228be6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; }
 
@@ -97,12 +96,15 @@
             @page { size: auto; margin: 8mm; }
             body, html { 
                 background: white !important; padding: 0 !important; margin: 0 !important; color: #000 !important; 
-                zoom: 0.65; /* 웹페이지 비율을 축소하여 한 페이지에 꽉 차게 조절 */
+                zoom: 0.65;
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important;
             }
             
-            #main-dashboard-title, #loginOverlay, .tab-menu, .controls, .ai-controls, button, .action-btn, .delete-btn { display: none !important; }
+            /* 제목 표시 및 기타 UI 숨김 */
+            #loginOverlay, .tab-menu, .controls, .ai-controls, button, .action-btn, .delete-btn { display: none !important; }
+            #main-dashboard-title { display: block !important; text-align: center; margin-bottom: 20px; font-size: 24px; }
+
             .container { box-shadow: none !important; border: none !important; padding: 0 !important; max-width: none !important; width: 100% !important; margin: 0 !important; background: white !important; }
             
             .tab-content { display: none !important; }
@@ -111,11 +113,9 @@
             .table-container, .a4-wrapper { max-height: none !important; overflow: visible !important; border: none !important; }
             .ng-table th { position: static !important; }
             
-            /* 차트들이 옆으로 나란히 유지되도록 고정 */
             .chart-row { display: flex !important; flex-wrap: nowrap !important; page-break-inside: avoid; gap: 10px !important; }
             .chart-box { flex: 1 !important; min-width: 0 !important; page-break-inside: avoid; border: 1px solid #ccc !important; }
             
-            /* 8D 양식 인쇄 최적화 */
             #view8DList.hidden + #view8DForm { display: block !important; }
             .a4-wrapper { display: block; padding: 0; background: transparent; margin-top: 0; }
             .a4-paper { box-shadow: none; width: 100%; height: auto; padding: 0; border: none; min-height: auto; }
@@ -348,6 +348,7 @@
     Chart.defaults.font.weight = 'bold'; 
     Chart.defaults.color = '#333';
     
+    // 기본적으로 데이터 라벨을 끄되, 협력사 탭에서만 명시적으로 켭니다.
     Chart.defaults.plugins.datalabels = { display: false, color: '#333', textStrokeColor: '#fff', textStrokeWidth: 4, font: { weight: '900', size: 14 }, clamp: true };
 
     const ADMIN_PW = '4203'; // 기본 비밀번호
@@ -392,7 +393,7 @@
     }
 
     // ==========================================
-    // 1. MSA Cg/Cgk 분석 로직 (완전 복구됨)
+    // 1. MSA Cg/Cgk 분석 로직
     // ==========================================
     let cgkData = {}; let cgkConfig = {}; let cgkRunCharts = {}; let cgkHistCharts = {};
     document.getElementById('excelFileCgk').addEventListener('change', function(e) {
@@ -478,7 +479,7 @@
     }
 
     // ==========================================
-    // 2. 공정능력(CPK/PPK) 및 관리도 로직 (완전 복구됨)
+    // 2. 공정능력(CPK/PPK) 및 관리도 로직
     // ==========================================
     let cpkCategories = {}; let cpkRenderTimer = null; 
     const cpkControlConstants = { 2: { d2: 1.128, A2: 1.880, D3: 0, D4: 3.267, E2: 2.660 }, 3: { d2: 1.693, A2: 1.023, D3: 0, D4: 2.574 }, 4: { d2: 2.059, A2: 0.729, D3: 0, D4: 2.282 }, 5: { d2: 2.326, A2: 0.577, D3: 0, D4: 2.114 }, 6: { d2: 2.534, A2: 0.483, D3: 0, D4: 2.004 }, 7: { d2: 2.704, A2: 0.419, D3: 0.076, D4: 1.924 }, 8: { d2: 2.847, A2: 0.373, D3: 0.136, D4: 1.864 }, 9: { d2: 2.970, A2: 0.337, D3: 0.184, D4: 1.816 }, 10: { d2: 3.078, A2: 0.308, D3: 0.223, D4: 1.777 } };
@@ -644,7 +645,7 @@
     }
 
     // ==========================================
-    // 3. 협력사 수입검사 요약 로직 (완전 복구됨)
+    // 3. 협력사 수입검사 요약 로직
     // ==========================================
     let supChartsObj = {}; let allSupplierRawData = [];
     
@@ -695,20 +696,133 @@
         let projMap = {}; data.forEach(d => { if(!projMap[d.project]) projMap[d.project] = { total: 0, ng: 0, improved: 0 }; projMap[d.project].total++; if(d.isNG) { projMap[d.project].ng++; if(d.improved === 'O' || d.improved === '완료') projMap[d.project].improved++; } });
         let projLabels = Object.keys(projMap);
         
-        supChartsObj.chart1 = new Chart(document.getElementById('supChart1'), { type: 'bar', data: { labels: projLabels, datasets: [{ label: '총 검사수', data: projLabels.map(p => projMap[p].total), backgroundColor: '#f4b400' }, { label: '불량 발생건', data: projLabels.map(p => projMap[p].ng), backgroundColor: '#db4437' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Project 별 현황' } } } });
-        let improveRates = projLabels.map(p => projMap[p].ng > 0 ? (projMap[p].improved / projMap[p].ng) * 100 : 100);
-        supChartsObj.chart2 = new Chart(document.getElementById('supChart2'), { type: 'bar', data: { labels: projLabels, datasets: [{ type: 'line', label: '개선율(%)', data: improveRates, borderColor: '#0f9d58', yAxisID: 'y1' }, { type: 'bar', label: '불량 건수', data: projLabels.map(p => projMap[p].ng), backgroundColor: '#ffcc80', yAxisID: 'y' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: '불량 개선 실행율' } } } });
+        // 1. 프로젝트 별 현황
+        supChartsObj.chart1 = new Chart(document.getElementById('supChart1'), { 
+            type: 'bar', 
+            data: { 
+                labels: projLabels, 
+                datasets: [
+                    { label: '총 검사수', data: projLabels.map(p => projMap[p].total), backgroundColor: '#f4b400' }, 
+                    { label: '불량 발생건', data: projLabels.map(p => projMap[p].ng), backgroundColor: '#db4437' }
+                ] 
+            }, 
+            options: { 
+                responsive: true, maintainAspectRatio: false, 
+                plugins: { 
+                    title: { display: true, text: 'Project 별 현황' },
+                    datalabels: { display: true, anchor: 'end', align: 'top', font: {size: 11}, formatter: v => v > 0 ? v : '' } 
+                } 
+            } 
+        });
+
+        // 2. 불량 개선 실행율 (건수 막대 + 비율 선)
+        let improveRates = projLabels.map(p => projMap[p].ng > 0 ? (projMap[p].improved / projMap[p].ng) * 100 : 0);
+        supChartsObj.chart2 = new Chart(document.getElementById('supChart2'), { 
+            type: 'bar', 
+            data: { 
+                labels: projLabels, 
+                datasets: [
+                    { type: 'line', label: '개선율(%)', data: improveRates, borderColor: '#0f9d58', yAxisID: 'y1' }, 
+                    { type: 'bar', label: '불량 건수', data: projLabels.map(p => projMap[p].ng), backgroundColor: '#ffcc80', yAxisID: 'y' }
+                ] 
+            }, 
+            options: { 
+                responsive: true, maintainAspectRatio: false, 
+                scales: {
+                    y: { type: 'linear', display: true, position: 'left', title: {display: true, text: '건수'} },
+                    y1: { type: 'linear', display: true, position: 'right', title: {display: true, text: '개선율(%)'}, min: 0, max: 100, grid: {drawOnChartArea: false} }
+                },
+                plugins: { 
+                    title: { display: true, text: '불량 개선 실행율' },
+                    datalabels: { 
+                        display: true, font: {size: 11},
+                        formatter: (v, ctx) => v === 0 ? '' : (ctx.dataset.type === 'line' ? v.toFixed(0) + '%' : v),
+                        anchor: (ctx) => ctx.dataset.type === 'line' ? 'center' : 'end',
+                        align: (ctx) => ctx.dataset.type === 'line' ? 'bottom' : 'top'
+                    }
+                } 
+            } 
+        });
         
         let supMap = {}; data.forEach(d => { if(!supMap[d.supplier]) supMap[d.supplier] = { total: 0, ng: 0 }; supMap[d.supplier].total++; if(d.isNG) supMap[d.supplier].ng++; });
         let sortedSuppliers = Object.keys(supMap).sort((a,b) => supMap[b].ng - supMap[a].ng); let worstSuppliers = sortedSuppliers.slice(0, 5); let worstNgData = worstSuppliers.map(s => supMap[s].ng);
-        supChartsObj.chart3 = new Chart(document.getElementById('supChart3'), { type: 'pie', data: { labels: worstSuppliers, datasets: [{ data: worstNgData, backgroundColor: ['#db4437', '#e67c73', '#f4b400', '#0f9d58', '#4285f4'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: '불량 누적 WORST 협력사 비중' } } } });
+        
+        // 3. Worst 협력사 비중 (파이 차트)
+        supChartsObj.chart3 = new Chart(document.getElementById('supChart3'), { 
+            type: 'pie', 
+            data: { 
+                labels: worstSuppliers, 
+                datasets: [{ data: worstNgData, backgroundColor: ['#db4437', '#e67c73', '#f4b400', '#0f9d58', '#4285f4'] }] 
+            }, 
+            options: { 
+                responsive: true, maintainAspectRatio: false, 
+                plugins: { 
+                    title: { display: true, text: '불량 누적 WORST 협력사 비중' },
+                    datalabels: { 
+                        display: true, color: '#fff', font: {size: 12, weight: 'bold'},
+                        formatter: (v, ctx) => { let label = ctx.chart.data.labels[ctx.dataIndex]; return label + '\n' + v + '건'; }
+                    }
+                } 
+            } 
+        });
         
         let supLabels = sortedSuppliers; let supRates = supLabels.map(s => (supMap[s].ng / supMap[s].total) * 100);
-        supChartsObj.chart4 = new Chart(document.getElementById('supChart4'), { type: 'bar', data: { labels: supLabels, datasets: [{ type: 'line', label: '불량률(%)', data: supRates, borderColor: '#4285f4', yAxisID: 'y1' }, { type: 'bar', label: '검사 수량', data: supLabels.map(s => supMap[s].total), backgroundColor: '#a5d6a7', yAxisID: 'y' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: '협력사 별 누적 불량률' } } } });
+        
+        // 4. 협력사 별 누적 불량률 (3% 목표선 추가)
+        supChartsObj.chart4 = new Chart(document.getElementById('supChart4'), { 
+            type: 'bar', 
+            data: { 
+                labels: supLabels, 
+                datasets: [
+                    { type: 'line', label: '목표 (3%)', data: supLabels.map(()=>3), borderColor: '#e74c3c', borderDash: [5,5], pointRadius: 0, yAxisID: 'y1' }, // 3% 기준선 추가
+                    { type: 'line', label: '불량률(%)', data: supRates, borderColor: '#4285f4', yAxisID: 'y1' }, 
+                    { type: 'bar', label: '검사 수량', data: supLabels.map(s => supMap[s].total), backgroundColor: '#a5d6a7', yAxisID: 'y' }
+                ] 
+            }, 
+            options: { 
+                responsive: true, maintainAspectRatio: false, 
+                scales: {
+                    y: { type: 'linear', display: true, position: 'left', title: {display: true, text: '검사 건수'} },
+                    y1: { type: 'linear', display: true, position: 'right', title: {display: true, text: '불량률(%)'}, min: 0, grid: {drawOnChartArea: false} }
+                },
+                plugins: { 
+                    title: { display: true, text: '협력사 별 누적 불량률' },
+                    datalabels: { 
+                        display: (ctx) => ctx.dataset.label !== '목표 (3%)', // 3% 목표선에는 라벨 안나오게 처리
+                        font: {size: 11},
+                        formatter: (v, ctx) => v === 0 ? '' : (ctx.dataset.type === 'line' ? v.toFixed(1) + '%' : v),
+                        anchor: (ctx) => ctx.dataset.type === 'line' ? 'center' : 'end',
+                        align: (ctx) => ctx.dataset.type === 'line' ? 'bottom' : 'top'
+                    }
+                } 
+            } 
+        });
         
         let monthMap = {}; data.forEach(d => { if(!monthMap[d.month]) monthMap[d.month] = { total: 0, ng: 0 }; monthMap[d.month].total++; if(d.isNG) monthMap[d.month].ng++; });
         let monthLabels = ["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"].filter(m => monthMap[m]); let monthRates = monthLabels.map(m => (monthMap[m].ng / monthMap[m].total) * 100);
-        supChartsObj.chart5 = new Chart(document.getElementById('supChart5'), { type: 'line', data: { labels: monthLabels, datasets: [{ label: '평균 불량률(%)', data: monthRates, borderColor: '#3498db' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: '월별 종합 불량률 추이' } } } });
+        
+        // 5. 월별 종합 불량률 추이 (3% 목표선 추가)
+        supChartsObj.chart5 = new Chart(document.getElementById('supChart5'), { 
+            type: 'line', 
+            data: { 
+                labels: monthLabels, 
+                datasets: [
+                    { label: '목표 (3%)', data: monthLabels.map(()=>3), borderColor: '#e74c3c', borderDash: [5,5], pointRadius: 0 }, // 3% 기준선 추가
+                    { label: '평균 불량률(%)', data: monthRates, borderColor: '#3498db' }
+                ] 
+            }, 
+            options: { 
+                responsive: true, maintainAspectRatio: false, 
+                plugins: { 
+                    title: { display: true, text: '월별 종합 불량률 추이' },
+                    datalabels: { 
+                        display: (ctx) => ctx.dataset.label !== '목표 (3%)', // 목표선에는 숨김
+                        font: {size: 12}, formatter: v => v.toFixed(1) + '%', anchor: 'end', align: 'top' 
+                    }
+                },
+                scales: { y: { title: {display:true, text:'불량률(%)'}, min: 0 } }
+            } 
+        });
     }
 
     function renderSupplierNGTable(data) {
