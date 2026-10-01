@@ -101,7 +101,6 @@
                 print-color-adjust: exact !important;
             }
             
-            /* 제목 표시 및 기타 UI 숨김 */
             #loginOverlay, .tab-menu, .controls, .ai-controls, button, .action-btn, .delete-btn { display: none !important; }
             #main-dashboard-title { display: block !important; text-align: center; margin-bottom: 20px; font-size: 24px; }
 
@@ -135,7 +134,8 @@
 </div>
 
 <div class="container">
-    <h2 id="main-dashboard-title" style="margin-top:0; color: #343a40; font-weight: 900;">📊 제조 품질 통합 대시보드</h2>
+    <!-- 동적으로 탭 이름이 붙는 메인 타이틀 -->
+    <h2 id="main-dashboard-title" style="margin-top:0; color: #343a40; font-weight: 900;">📊 제조 품질 통합 대시보드 <span style="font-size: 0.75em; color: #555;">- MSA Cg/Cgk 분석</span></h2>
     
     <div class="tab-menu">
         <button class="tab-btn active" onclick="openTab('cgkTab', this)">MSA Cg/Cgk 분석</button>
@@ -348,7 +348,6 @@
     Chart.defaults.font.weight = 'bold'; 
     Chart.defaults.color = '#333';
     
-    // 기본적으로 데이터 라벨을 끄되, 협력사 탭에서만 명시적으로 켭니다.
     Chart.defaults.plugins.datalabels = { display: false, color: '#333', textStrokeColor: '#fff', textStrokeWidth: 4, font: { weight: '900', size: 14 }, clamp: true };
 
     const ADMIN_PW = '4203'; // 기본 비밀번호
@@ -360,7 +359,6 @@
     }
     document.getElementById('passwordInput').addEventListener('keypress', e => { if (e.key === 'Enter') checkPassword(); });
 
-    // 보안 권한 체크 함수
     function requireAuth(callback, actionName) {
         const pwd = prompt(`[${actionName}] 권한이 필요합니다. 관리자 비밀번호를 입력하세요.`);
         if (pwd === ADMIN_PW) callback();
@@ -380,12 +378,16 @@
     });
 
     function syncApiKeys(apiKey) { localStorage.setItem('gemini_api_key', apiKey); }
+    
+    // 💡 수정됨: 탭을 바꿀 때마다 메인 타이틀에 탭 이름을 동적으로 추가하여 인쇄 시 반영되도록 설정
     function openTab(tabName, btnElement) {
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(tabName).classList.add('active');
         btnElement.classList.add('active');
+        document.getElementById('main-dashboard-title').innerHTML = `📊 제조 품질 통합 대시보드 <span style="font-size: 0.75em; color: #555;">- ${btnElement.innerText}</span>`;
     }
+    
     function toggleAiReport(contentId, iconId) {
         const content = document.getElementById(contentId), icon = document.getElementById(iconId);
         if (content.style.display === 'none') { content.style.display = 'block'; icon.textContent = '▼'; } 
@@ -696,7 +698,6 @@
         let projMap = {}; data.forEach(d => { if(!projMap[d.project]) projMap[d.project] = { total: 0, ng: 0, improved: 0 }; projMap[d.project].total++; if(d.isNG) { projMap[d.project].ng++; if(d.improved === 'O' || d.improved === '완료') projMap[d.project].improved++; } });
         let projLabels = Object.keys(projMap);
         
-        // 1. 프로젝트 별 현황
         supChartsObj.chart1 = new Chart(document.getElementById('supChart1'), { 
             type: 'bar', 
             data: { 
@@ -715,7 +716,6 @@
             } 
         });
 
-        // 2. 불량 개선 실행율 (건수 막대 + 비율 선)
         let improveRates = projLabels.map(p => projMap[p].ng > 0 ? (projMap[p].improved / projMap[p].ng) * 100 : 0);
         supChartsObj.chart2 = new Chart(document.getElementById('supChart2'), { 
             type: 'bar', 
@@ -747,7 +747,7 @@
         let supMap = {}; data.forEach(d => { if(!supMap[d.supplier]) supMap[d.supplier] = { total: 0, ng: 0 }; supMap[d.supplier].total++; if(d.isNG) supMap[d.supplier].ng++; });
         let sortedSuppliers = Object.keys(supMap).sort((a,b) => supMap[b].ng - supMap[a].ng); let worstSuppliers = sortedSuppliers.slice(0, 5); let worstNgData = worstSuppliers.map(s => supMap[s].ng);
         
-        // 3. Worst 협력사 비중 (파이 차트)
+        // 💡 수정됨: 파이 차트의 텍스트 색상을 검정색으로 하고 흰색 테두리 추가
         supChartsObj.chart3 = new Chart(document.getElementById('supChart3'), { 
             type: 'pie', 
             data: { 
@@ -759,7 +759,7 @@
                 plugins: { 
                     title: { display: true, text: '불량 누적 WORST 협력사 비중' },
                     datalabels: { 
-                        display: true, color: '#fff', font: {size: 12, weight: 'bold'},
+                        display: true, color: '#212529', font: {size: 13, weight: 'bold'}, textStrokeColor: '#ffffff', textStrokeWidth: 3,
                         formatter: (v, ctx) => { let label = ctx.chart.data.labels[ctx.dataIndex]; return label + '\n' + v + '건'; }
                     }
                 } 
@@ -768,13 +768,12 @@
         
         let supLabels = sortedSuppliers; let supRates = supLabels.map(s => (supMap[s].ng / supMap[s].total) * 100);
         
-        // 4. 협력사 별 누적 불량률 (3% 목표선 추가)
         supChartsObj.chart4 = new Chart(document.getElementById('supChart4'), { 
             type: 'bar', 
             data: { 
                 labels: supLabels, 
                 datasets: [
-                    { type: 'line', label: '목표 (3%)', data: supLabels.map(()=>3), borderColor: '#e74c3c', borderDash: [5,5], pointRadius: 0, yAxisID: 'y1' }, // 3% 기준선 추가
+                    { type: 'line', label: '목표 (3%)', data: supLabels.map(()=>3), borderColor: '#e74c3c', borderDash: [5,5], pointRadius: 0, yAxisID: 'y1' }, 
                     { type: 'line', label: '불량률(%)', data: supRates, borderColor: '#4285f4', yAxisID: 'y1' }, 
                     { type: 'bar', label: '검사 수량', data: supLabels.map(s => supMap[s].total), backgroundColor: '#a5d6a7', yAxisID: 'y' }
                 ] 
@@ -788,7 +787,7 @@
                 plugins: { 
                     title: { display: true, text: '협력사 별 누적 불량률' },
                     datalabels: { 
-                        display: (ctx) => ctx.dataset.label !== '목표 (3%)', // 3% 목표선에는 라벨 안나오게 처리
+                        display: (ctx) => ctx.dataset.label !== '목표 (3%)', 
                         font: {size: 11},
                         formatter: (v, ctx) => v === 0 ? '' : (ctx.dataset.type === 'line' ? v.toFixed(1) + '%' : v),
                         anchor: (ctx) => ctx.dataset.type === 'line' ? 'center' : 'end',
@@ -801,13 +800,12 @@
         let monthMap = {}; data.forEach(d => { if(!monthMap[d.month]) monthMap[d.month] = { total: 0, ng: 0 }; monthMap[d.month].total++; if(d.isNG) monthMap[d.month].ng++; });
         let monthLabels = ["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"].filter(m => monthMap[m]); let monthRates = monthLabels.map(m => (monthMap[m].ng / monthMap[m].total) * 100);
         
-        // 5. 월별 종합 불량률 추이 (3% 목표선 추가)
         supChartsObj.chart5 = new Chart(document.getElementById('supChart5'), { 
             type: 'line', 
             data: { 
                 labels: monthLabels, 
                 datasets: [
-                    { label: '목표 (3%)', data: monthLabels.map(()=>3), borderColor: '#e74c3c', borderDash: [5,5], pointRadius: 0 }, // 3% 기준선 추가
+                    { label: '목표 (3%)', data: monthLabels.map(()=>3), borderColor: '#e74c3c', borderDash: [5,5], pointRadius: 0 }, 
                     { label: '평균 불량률(%)', data: monthRates, borderColor: '#3498db' }
                 ] 
             }, 
@@ -816,7 +814,7 @@
                 plugins: { 
                     title: { display: true, text: '월별 종합 불량률 추이' },
                     datalabels: { 
-                        display: (ctx) => ctx.dataset.label !== '목표 (3%)', // 목표선에는 숨김
+                        display: (ctx) => ctx.dataset.label !== '목표 (3%)', 
                         font: {size: 12}, formatter: v => v.toFixed(1) + '%', anchor: 'end', align: 'top' 
                     }
                 },
@@ -874,7 +872,6 @@
             
             localStorage.setItem('fourMData', JSON.stringify(fourMData));
             
-            // 입력창 초기화
             document.getElementById('inputDate4M').value = '';
             document.getElementById('inputProject4M').value = '';
             document.getElementById('inputDesc4M').value = '';
@@ -897,7 +894,6 @@
         const filterYear = document.getElementById('filterYear4M').value;
         const filterProject = document.getElementById('filterProject4M').value;
 
-        // 드롭다운 세팅
         let years = new Set(fourMData.map(d => d.year));
         let projects = new Set(fourMData.map(d => d.project));
         
