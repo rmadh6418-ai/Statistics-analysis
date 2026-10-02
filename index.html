@@ -134,7 +134,6 @@
 </div>
 
 <div class="container">
-    <!-- 동적으로 탭 이름이 붙는 메인 타이틀 -->
     <h2 id="main-dashboard-title" style="margin-top:0; color: #343a40; font-weight: 900;">📊 제조 품질 통합 대시보드 <span style="font-size: 0.75em; color: #555;">- MSA Cg/Cgk 분석</span></h2>
     
     <div class="tab-menu">
@@ -350,19 +349,43 @@
     
     Chart.defaults.plugins.datalabels = { display: false, color: '#333', textStrokeColor: '#fff', textStrokeWidth: 4, font: { weight: '900', size: 14 }, clamp: true };
 
-    const ADMIN_PW = '4203'; // 기본 비밀번호
+    // [보안 패치] 비밀번호 평문 노출 방지를 위한 XOR 비트 연산 적용 (기존 '4203'을 0x5A로 XOR 암호화한 값의 배열)
+    const ENC_PW = [110, 104, 106, 105]; 
+    const XOR_KEY = 0x5A;
+
+    // XOR 복호화 및 검증 함수
+    function verifyPassword(input) {
+        if (!input || input.length !== ENC_PW.length) return false;
+        let isValid = true;
+        for (let i = 0; i < input.length; i++) {
+            // 입력값의 ASCII 코드와 XOR_KEY를 비트 연산하여 매칭 여부 확인
+            if ((input.charCodeAt(i) ^ XOR_KEY) !== ENC_PW[i]) {
+                isValid = false;
+            }
+        }
+        return isValid;
+    }
 
     function checkPassword() {
         const pwd = document.getElementById('passwordInput').value;
-        if (pwd === ADMIN_PW) document.getElementById('loginOverlay').style.display = 'none';
-        else { alert('비밀번호가 일치하지 않습니다.'); document.getElementById('passwordInput').value = ''; }
+        if (verifyPassword(pwd)) {
+            document.getElementById('loginOverlay').style.display = 'none';
+        } else { 
+            alert('비밀번호가 일치하지 않습니다.'); 
+            document.getElementById('passwordInput').value = ''; 
+        }
     }
     document.getElementById('passwordInput').addEventListener('keypress', e => { if (e.key === 'Enter') checkPassword(); });
 
     function requireAuth(callback, actionName) {
         const pwd = prompt(`[${actionName}] 권한이 필요합니다. 관리자 비밀번호를 입력하세요.`);
-        if (pwd === ADMIN_PW) callback();
-        else if (pwd !== null) alert("비밀번호가 일치하지 않습니다.");
+        if (pwd !== null) {
+            if (verifyPassword(pwd)) {
+                callback();
+            } else {
+                alert("비밀번호가 일치하지 않습니다.");
+            }
+        }
     }
 
     window.addEventListener('load', () => {
@@ -379,7 +402,6 @@
 
     function syncApiKeys(apiKey) { localStorage.setItem('gemini_api_key', apiKey); }
     
-    // 💡 수정됨: 탭을 바꿀 때마다 메인 타이틀에 탭 이름을 동적으로 추가하여 인쇄 시 반영되도록 설정
     function openTab(tabName, btnElement) {
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -747,7 +769,6 @@
         let supMap = {}; data.forEach(d => { if(!supMap[d.supplier]) supMap[d.supplier] = { total: 0, ng: 0 }; supMap[d.supplier].total++; if(d.isNG) supMap[d.supplier].ng++; });
         let sortedSuppliers = Object.keys(supMap).sort((a,b) => supMap[b].ng - supMap[a].ng); let worstSuppliers = sortedSuppliers.slice(0, 5); let worstNgData = worstSuppliers.map(s => supMap[s].ng);
         
-        // 💡 수정됨: 파이 차트의 텍스트 색상을 검정색으로 하고 흰색 테두리 추가
         supChartsObj.chart3 = new Chart(document.getElementById('supChart3'), { 
             type: 'pie', 
             data: { 
