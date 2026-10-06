@@ -114,16 +114,17 @@
             tr { page-break-inside: avoid; }
         }
 
-        /* 모바일 최적화 CSS */
+        /* 📱 모바일 최적화 CSS (잘림 방지 기능 포함) */
         @media screen and (max-width: 768px) {
-            .container { padding: 10px; }
+            .container { padding: 10px; width: 100%; box-sizing: border-box; overflow-x: hidden; }
             .tab-menu { flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; padding-bottom: 5px; }
             .tab-btn { flex: 0 0 auto; padding: 10px 12px; font-size: 13px; }
             .chart-row { flex-direction: column; }
-            .chart-box { min-width: 100% !important; height: 300px !important; margin-bottom: 15px; }
+            /* 차트 박스가 화면을 넘어가지 않도록 강제 리사이징 */
+            .chart-box { width: 100% !important; min-width: 0 !important; height: 350px !important; margin-bottom: 15px; padding: 10px; box-sizing: border-box; }
             .controls { flex-direction: column; align-items: stretch; }
             .control-group { width: 100%; }
-            .table-container, .summarySectionCgk { overflow-x: auto; }
+            .table-container, .summarySectionCgk { overflow-x: auto; width: 100%; }
             .ng-table, .summary-table { min-width: 600px; } 
             .a4-paper { width: 100%; padding: 5mm; }
             .login-box { width: 90%; padding: 20px; }
@@ -447,11 +448,14 @@
     async function sendToSheet(sheetName, action, data = null, id = null) {
         try {
             await fetch(GAS_API_URL, {
+                redirect: 'follow', // 리다이렉트 허용
                 method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // 브라우저 CORS 보안 차단 방지
                 body: JSON.stringify({ sheetName, action, data, id })
             });
         } catch (error) {
             console.error("데이터 전송 실패:", error);
+            alert("구글 시트 연동에 실패했습니다. (네트워크 확인)");
         }
     }
 
@@ -935,7 +939,7 @@
     }
 
     // ==========================================
-    // ⭐ 5. 4M 변경 관리 로직 (구글 시트 연동)
+    // ⭐ 5. 4M 변경 관리 로직 (구글 시트 연동 + 차트 짤림 방지)
     // ==========================================
     let fourMData = [];
     let fourMDynamicChart = null; 
@@ -956,7 +960,6 @@
             
             const newRecord = { id: Date.now().toString(), date, year: date.split('-')[0], project, type, desc };
             
-            // 화면에 먼저 추가 후 시트 전송
             fourMData.push(newRecord); 
             render4MTable();
             document.getElementById('inputDate4M').value=''; document.getElementById('inputProject4M').value=''; document.getElementById('inputDesc4M').value='';
@@ -999,8 +1002,12 @@
                 data: { labels: labels, datasets: [{ label: '발생 건수', data: labels.map(k => counts[k]), backgroundColor: '#3498db', borderRadius: 4 }] },
                 options: {
                     indexAxis: isHorizontal ? 'y' : 'x', responsive: true, maintainAspectRatio: false,
+                    layout: { padding: { top: 25, right: 35, bottom: 10, left: 10 } },
                     plugins: { datalabels: { display: true, anchor: 'end', align: isHorizontal?'right':'top', formatter: v=>v+'건' }, legend: {display:false} },
-                    scales: { [isHorizontal ? 'x' : 'y']: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                    scales: { 
+                        x: { beginAtZero: true, ticks: { stepSize: 1 }, grace: '20%' },
+                        y: { beginAtZero: true, ticks: { stepSize: 1 }, grace: '20%' } 
+                    }
                 }
             });
         }
@@ -1028,7 +1035,7 @@
     }
 
     // ==========================================
-    // ⭐ 6. 고객사 부적합 (8D) 로직 (구글 시트 연동)
+    // ⭐ 6. 고객사 부적합 8D 로직 (구글 시트 연동 + 차트 짤림 방지)
     // ==========================================
     let eightDData = []; 
     let eightDDynamicChart = null;
@@ -1063,8 +1070,12 @@
                 data: { labels: labels, datasets: [{ label: '클레임 건수', data: labels.map(k => counts[k]), backgroundColor: '#e74c3c', borderRadius: 4 }] },
                 options: {
                     indexAxis: isHorizontal ? 'y' : 'x', responsive: true, maintainAspectRatio: false,
+                    layout: { padding: { top: 25, right: 35, bottom: 10, left: 10 } },
                     plugins: { datalabels: { display: true, anchor: 'end', align: isHorizontal?'right':'top', formatter: v=>v+'건' }, legend: {display:false} },
-                    scales: { [isHorizontal ? 'x' : 'y']: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                    scales: { 
+                        x: { beginAtZero: true, ticks: { stepSize: 1 }, grace: '20%' },
+                        y: { beginAtZero: true, ticks: { stepSize: 1 }, grace: '20%' } 
+                    }
                 }
             });
         }
@@ -1126,7 +1137,6 @@
             eightDData.push(report);
         }
         show8DList();
-        
         sendToSheet('8D', isUpdate ? 'update' : 'insert', report);
     }
     
@@ -1152,7 +1162,7 @@
     }
 
     // ==========================================
-    // ⭐ 7. QMS 및 품질양식 관리 로직 (구글 시트 연동)
+    // ⭐ 7. QMS 양식 관리 로직 (구글 시트 연동 + 차트 짤림 방지)
     // ==========================================
     let qmsDocData = [];
     let qmsDynamicChart = null;
@@ -1187,8 +1197,12 @@
                 data: { labels: labels, datasets: [{ label: '제/개정 건수', data: labels.map(k => counts[k]), backgroundColor: '#27ae60', borderRadius: 4 }] },
                 options: {
                     indexAxis: isHorizontal ? 'y' : 'x', responsive: true, maintainAspectRatio: false,
+                    layout: { padding: { top: 25, right: 35, bottom: 10, left: 10 } },
                     plugins: { datalabels: { display: true, anchor: 'end', align: isHorizontal?'right':'top', formatter: v=>v+'건' }, legend: {display:false} },
-                    scales: { [isHorizontal ? 'x' : 'y']: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                    scales: { 
+                        x: { beginAtZero: true, ticks: { stepSize: 1 }, grace: '20%' },
+                        y: { beginAtZero: true, ticks: { stepSize: 1 }, grace: '20%' } 
+                    }
                 }
             });
         }
