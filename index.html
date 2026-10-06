@@ -113,6 +113,21 @@
             .report-table { width: 100%; }
             tr { page-break-inside: avoid; }
         }
+
+        /* 모바일 최적화 CSS */
+        @media screen and (max-width: 768px) {
+            .container { padding: 10px; }
+            .tab-menu { flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; padding-bottom: 5px; }
+            .tab-btn { flex: 0 0 auto; padding: 10px 12px; font-size: 13px; }
+            .chart-row { flex-direction: column; }
+            .chart-box { min-width: 100% !important; height: 300px !important; margin-bottom: 15px; }
+            .controls { flex-direction: column; align-items: stretch; }
+            .control-group { width: 100%; }
+            .table-container, .summarySectionCgk { overflow-x: auto; }
+            .ng-table, .summary-table { min-width: 600px; } 
+            .a4-paper { width: 100%; padding: 5mm; }
+            .login-box { width: 90%; padding: 20px; }
+        }
     </style>
 </head>
 <body>
@@ -192,7 +207,6 @@
                 <button class="action-btn" onclick="recalcGrr()" style="background-color:#2b8a3e;">다시 계산하기</button>
             </div>
             <div class="control-group" style="margin-left:auto; justify-content:center;">
-                <!-- 양식 다운로드 버튼 -->
                 <a href="#" onclick="downloadGrrTemplate()" style="color:#2b8a3e; text-decoration:underline; font-size:15px; font-weight:900;">📄 측정 표준 양식 다운로드 (3x10x3)</a>
             </div>
         </div>
@@ -384,7 +398,7 @@
                 <div class="control-group"><label>Rev.</label><input type="number" id="inputDocRev" min="0" step="1" value="0" style="width:70px;"></div>
                 <div class="control-group"><label>시행 일자</label><input type="date" id="inputDocDate"></div>
                 <div class="control-group" style="flex:1;"><label>제/개정 사유 및 설명</label><input type="text" id="inputDocReason" style="width:100%;"></div>
-                <div class="control-group" style="flex:1;"><label style="color:#27ae60;">📁 최신 파일 첨부 (2MB 이하)</label><input type="file" id="inputDocFile" style="background: white; border-color: #27ae60;"></div>
+                <div class="control-group" style="flex:1;"><label style="color:#27ae60;">📁 최신 파일 첨부</label><input type="file" id="inputDocFile" style="background: white; border-color: #27ae60;"></div>
                 <button class="action-btn" onclick="addQmsDocument()">문서/양식 등록</button>
             </div>
         </div>
@@ -414,7 +428,35 @@
 
 <script>
     // ==========================================
-    // 0. 공통 설정 및 탭 제어
+    // ⭐ [필수 입력] 구글 Apps Script에서 복사한 웹 앱 URL을 아래에 붙여넣으세요.
+    // ==========================================
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwWVTu-cPMWl5ej7v5u9DX-nJEjd5etiCfqNP2DeD6pL3rFQbSCIwJmHWLNDxT_02s/exec";
+
+    // 구글 시트 데이터 가져오기 (공통 함수)
+    async function fetchFromSheet(sheetName) {
+        try {
+            const response = await fetch(`${GAS_API_URL}?sheetName=${sheetName}`);
+            return await response.json();
+        } catch (error) {
+            console.error("데이터 로드 실패:", error);
+            return [];
+        }
+    }
+
+    // 구글 시트 데이터 쓰기/수정/삭제 (공통 함수)
+    async function sendToSheet(sheetName, action, data = null, id = null) {
+        try {
+            await fetch(GAS_API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ sheetName, action, data, id })
+            });
+        } catch (error) {
+            console.error("데이터 전송 실패:", error);
+        }
+    }
+
+    // ==========================================
+    // 공통 설정 및 탭 제어
     // ==========================================
     Chart.register(ChartDataLabels);
     Chart.defaults.font.size = 13; Chart.defaults.font.weight = 'bold'; Chart.defaults.color = '#333';
@@ -736,28 +778,22 @@
     }
     async function generateAIReportSupplier() { /* API 유지 */ }
 
-
-    
     // ==========================================
-    // 3. [신규/수정] Gage R&R 분석 로직 (Tolerance P/T 분리 적용 + CSV 다운로드 업데이트)
+    // 3. Gage R&R 분석 로직 
     // ==========================================
     let grrChartBarInst = null; let grrChartLineInst = null;
     let grrRawDataCache = null; 
     
-    // 3명 x 10부품 x 3반복 양식 다운로드 함수 (업데이트됨)
     function downloadGrrTemplate() {
-        let csvContent = "\uFEFFPart,Appraiser,Trial,Value\n"; // UTF-8 BOM 처리로 엑셀에서 한글 안 깨짐
+        let csvContent = "\uFEFFPart,Appraiser,Trial,Value\n";
         const appraisers = ['A', 'B', 'C'];
-        
         for (let a of appraisers) {
             for (let p = 1; p <= 10; p++) {
                 for (let t = 1; t <= 3; t++) {
-                    // P1, A, 1, (빈칸) 형태로 총 90행 생성
                     csvContent += `P${p},${a},${t},\n`;
                 }
             }
         }
-
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a"); 
@@ -777,7 +813,7 @@
             const data = new Uint8Array(e.target.result); const workbook = XLSX.read(data, {type: 'array'});
             const worksheet = workbook.Sheets[workbook.SheetNames[0]];
             const json = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
-            grrRawDataCache = json; // 캐시 저장
+            grrRawDataCache = json;
             processGrrData(json);
         }; reader.readAsArrayBuffer(file);
     });
@@ -821,9 +857,7 @@
         let pMeans = parts.map(p => partAvgs[p].sum / partAvgs[p].count);
         let Rp = Math.max(...pMeans) - Math.min(...pMeans);
 
-        // K = 6 / d2 적용
         let K1 = 6 / getD2(nT), K2 = 6 / getD2(nA), K3 = 6 / getD2(nP);
-        
         let EV = R_double_bar * K1; 
         let AV_sq = Math.pow(X_diff_bar * K2, 2) - (Math.pow(EV, 2) / (nT * nP));
         let AV = AV_sq > 0 ? Math.sqrt(AV_sq) : 0;
@@ -901,20 +935,45 @@
     }
 
     // ==========================================
-    // 5. 4M 변경 관리 로직 (+ 월별 차트 포맷팅)
+    // ⭐ 5. 4M 변경 관리 로직 (구글 시트 연동)
     // ==========================================
-    let fourMData = JSON.parse(localStorage.getItem('fourMData')) || [];
+    let fourMData = [];
     let fourMDynamicChart = null; 
-    function init4MTab() { render4MTable(); }
+    
+    async function init4MTab() { 
+        document.getElementById('tableBody4M').innerHTML = '<tr><td colspan="6" style="padding: 20px;">데이터를 불러오는 중입니다...</td></tr>';
+        fourMData = await fetchFromSheet('4M');
+        render4MTable(); 
+    }
+    
     function add4MRecord() {
-        requireAuth(() => {
-            const date = document.getElementById('inputDate4M').value; const project = document.getElementById('inputProject4M').value.trim(); const type = document.getElementById('inputType4M').value; const desc = document.getElementById('inputDesc4M').value.trim();
+        requireAuth(async () => {
+            const date = document.getElementById('inputDate4M').value; 
+            const project = document.getElementById('inputProject4M').value.trim(); 
+            const type = document.getElementById('inputType4M').value; 
+            const desc = document.getElementById('inputDesc4M').value.trim();
             if(!date || !project || !desc) return alert("필수 입력 누락");
-            fourMData.push({ id: Date.now(), date, year: date.split('-')[0], project, type, desc });
-            localStorage.setItem('fourMData', JSON.stringify(fourMData)); render4MTable();
+            
+            const newRecord = { id: Date.now().toString(), date, year: date.split('-')[0], project, type, desc };
+            
+            // 화면에 먼저 추가 후 시트 전송
+            fourMData.push(newRecord); 
+            render4MTable();
+            document.getElementById('inputDate4M').value=''; document.getElementById('inputProject4M').value=''; document.getElementById('inputDesc4M').value='';
+            
+            await sendToSheet('4M', 'insert', newRecord);
         }, "신규 등록");
     }
-    function delete4MRecord(id) { requireAuth(() => { fourMData = fourMData.filter(d => d.id !== id); localStorage.setItem('fourMData', JSON.stringify(fourMData)); render4MTable(); }, "내역 삭제"); }
+    
+    function delete4MRecord(id) { 
+        requireAuth(async () => { 
+            if(confirm("삭제하시겠습니까?")) { 
+                fourMData = fourMData.filter(d => String(d.id) !== String(id)); 
+                render4MTable(); 
+                await sendToSheet('4M', 'delete', null, id);
+            } 
+        }, "내역 삭제"); 
+    }
 
     function draw4MDynamicChart(data) {
         if(fourMDynamicChart) fourMDynamicChart.destroy();
@@ -963,16 +1022,22 @@
         filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(d => {
             let tr = document.createElement('tr'); let color = '#2c3e50';
             if(d.type.includes('Man')) color = '#2980b9'; else if(d.type.includes('Machine')) color = '#e67e22'; else if(d.type.includes('Material')) color = '#8e44ad'; else if(d.type.includes('Method')) color = '#27ae60';
-            tr.innerHTML = `<td>${d.date}</td><td>${d.year}</td><td>${d.project}</td><td style="color: ${color}; font-weight: 900;">${d.type}</td><td style="text-align: left;">${d.desc}</td><td><button class="delete-btn no-print" onclick="delete4MRecord(${d.id})">삭제</button></td>`;
+            tr.innerHTML = `<td>${d.date}</td><td>${d.year}</td><td>${d.project}</td><td style="color: ${color}; font-weight: 900;">${d.type}</td><td style="text-align: left;">${d.desc}</td><td><button class="delete-btn no-print" onclick="delete4MRecord('${d.id}')">삭제</button></td>`;
             tbody.appendChild(tr);
         });
     }
 
     // ==========================================
-    // 6. 고객사 부적합 (8D) 로직 (+ 월별 차트 포맷팅)
+    // ⭐ 6. 고객사 부적합 (8D) 로직 (구글 시트 연동)
     // ==========================================
-    let eightDData = JSON.parse(localStorage.getItem('eightDData')) || []; let eightDDynamicChart = null;
-    function init8DTab() { render8DList(); }
+    let eightDData = []; 
+    let eightDDynamicChart = null;
+    
+    async function init8DTab() { 
+        document.getElementById('tableBody8D').innerHTML = '<tr><td colspan="6" style="padding: 20px;">데이터를 불러오는 중입니다...</td></tr>';
+        eightDData = await fetchFromSheet('8D'); 
+        render8DList(); 
+    }
     
     function draw8DDynamicChart(data) {
         if(eightDDynamicChart) eightDDynamicChart.destroy();
@@ -1021,12 +1086,13 @@
         filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(d => {
             let tr = document.createElement('tr');
             tr.innerHTML = `<td>${d.date}</td><td>${d.year}</td><td style="color: #2980b9;">${d.project}</td><td>${d.customer}</td><td style="color: #c0392b; font-weight: 900;">${d.defect}</td>
-                <td><button class="action-btn no-print" style="padding: 6px 12px; font-size:13px;" onclick="edit8D(${d.id})">수정</button> <button class="delete-btn no-print" onclick="delete8D(${d.id})">삭제</button></td>`;
+                <td><button class="action-btn no-print" style="padding: 6px 12px; font-size:13px;" onclick="edit8D('${d.id}')">수정</button> <button class="delete-btn no-print" onclick="delete8D('${d.id}')">삭제</button></td>`;
             tbody.appendChild(tr);
         });
     }
 
     function show8DList() { document.getElementById('view8DList').classList.remove('hidden'); document.getElementById('view8DForm').classList.add('hidden'); render8DList(); }
+    
     function createNew8D() {
         requireAuth(() => {
             document.getElementById('8d_id').value = ''; document.getElementById('8d_date').value = new Date().toISOString().split('T')[0];
@@ -1035,33 +1101,67 @@
             document.getElementById('view8DList').classList.add('hidden'); document.getElementById('view8DForm').classList.remove('hidden');
         }, "대책서 신규 작성");
     }
+    
     function save8D() {
-        const idInput = document.getElementById('8d_id').value; const date = document.getElementById('8d_date').value; const project = document.getElementById('8d_project').value.trim(); const customer = document.getElementById('8d_customer').value.trim(); const defect = document.getElementById('8d_defect').value.trim();
+        const idInput = document.getElementById('8d_id').value; const date = document.getElementById('8d_date').value; 
+        const project = document.getElementById('8d_project').value.trim(); const customer = document.getElementById('8d_customer').value.trim(); 
+        const defect = document.getElementById('8d_defect').value.trim();
+        
         if(!date || !project || !customer || !defect) return alert("필수 입력 사항 누락.");
-        const report = { id: idInput ? parseInt(idInput) : Date.now(), date: date, year: date.split('-')[0], project: project, customer: customer, part: document.getElementById('8d_part').value, defect: defect, d1: document.getElementById('8d_d1').innerHTML, d2: document.getElementById('8d_d2').innerHTML, d3: document.getElementById('8d_d3').innerHTML, d4: document.getElementById('8d_d4').innerHTML, d5: document.getElementById('8d_d5').innerHTML, d6: document.getElementById('8d_d6').innerHTML, d7: document.getElementById('8d_d7').innerHTML, d8: document.getElementById('8d_d8').innerHTML };
-        if(idInput) eightDData = eightDData.map(d => d.id === report.id ? report : d); else eightDData.push(report);
-        localStorage.setItem('eightDData', JSON.stringify(eightDData)); alert("저장되었습니다."); show8DList();
+        
+        const report = { 
+            id: idInput ? idInput : Date.now().toString(), 
+            date: date, year: date.split('-')[0], project: project, customer: customer, 
+            part: document.getElementById('8d_part').value, defect: defect, 
+            d1: document.getElementById('8d_d1').innerHTML, d2: document.getElementById('8d_d2').innerHTML, 
+            d3: document.getElementById('8d_d3').innerHTML, d4: document.getElementById('8d_d4').innerHTML, 
+            d5: document.getElementById('8d_d5').innerHTML, d6: document.getElementById('8d_d6').innerHTML, 
+            d7: document.getElementById('8d_d7').innerHTML, d8: document.getElementById('8d_d8').innerHTML 
+        };
+        
+        const isUpdate = !!idInput;
+        if(isUpdate) {
+            eightDData = eightDData.map(d => String(d.id) === String(report.id) ? report : d);
+        } else {
+            eightDData.push(report);
+        }
+        show8DList();
+        
+        sendToSheet('8D', isUpdate ? 'update' : 'insert', report);
     }
+    
     function edit8D(id) {
         requireAuth(() => {
-            const report = eightDData.find(d => d.id === id); if(!report) return;
-            document.getElementById('8d_id').value = report.id; document.getElementById('8d_date').value = report.date; document.getElementById('8d_project').value = report.project; document.getElementById('8d_customer').value = report.customer; document.getElementById('8d_part').value = report.part; document.getElementById('8d_defect').value = report.defect;
+            const report = eightDData.find(d => String(d.id) === String(id)); if(!report) return;
+            document.getElementById('8d_id').value = report.id; document.getElementById('8d_date').value = report.date; 
+            document.getElementById('8d_project').value = report.project; document.getElementById('8d_customer').value = report.customer; 
+            document.getElementById('8d_part').value = report.part; document.getElementById('8d_defect').value = report.defect;
             for(let i=1; i<=8; i++) document.getElementById('8d_d'+i).innerHTML = report['d'+i] || '';
             document.getElementById('view8DList').classList.add('hidden'); document.getElementById('view8DForm').classList.remove('hidden');
         }, "대책서 열람 및 수정");
     }
-    function delete8D(id) { requireAuth(() => { if(confirm("삭제하시겠습니까?")) { eightDData = eightDData.filter(d => d.id !== id); localStorage.setItem('eightDData', JSON.stringify(eightDData)); render8DList(); } }, "삭제"); }
+    
+    function delete8D(id) { 
+        requireAuth(async () => { 
+            if(confirm("삭제하시겠습니까?")) { 
+                eightDData = eightDData.filter(d => String(d.id) !== String(id)); 
+                render8DList(); 
+                await sendToSheet('8D', 'delete', null, id);
+            } 
+        }, "삭제"); 
+    }
 
     // ==========================================
-    // 7. QMS 및 품질양식 관리 로직
+    // ⭐ 7. QMS 및 품질양식 관리 로직 (구글 시트 연동)
     // ==========================================
-    let qmsDocData = JSON.parse(localStorage.getItem('qmsDocData')) || [
-        { id: 1, type: '품질매뉴얼', docNo: 'QM-01', name: '품질경영매뉴얼', rev: 5, date: '2026-01-10', reason: 'ISO 9001 갱신 심사 지적사항 반영', fileData: null, fileName: null },
-        { id: 2, type: '품질지침서', docNo: 'QI-12', name: '부적합품 관리 지침', rev: 4, date: '2026-07-22', reason: 'MRB 승인 절차 추가', fileData: null, fileName: null }
-    ];
+    let qmsDocData = [];
     let qmsDynamicChart = null;
 
-    function initQmsTab() { renderQmsDocTable(); }
+    async function initQmsTab() { 
+        document.getElementById('qmsDocTableBody').innerHTML = '<tr><td colspan="8" style="padding: 20px;">데이터를 불러오는 중입니다...</td></tr>';
+        qmsDocData = await fetchFromSheet('QMS');
+        renderQmsDocTable(); 
+    }
 
     function drawQmsDynamicChart(data) {
         if(qmsDynamicChart) qmsDynamicChart.destroy();
@@ -1070,7 +1170,7 @@
         
         data.forEach(d => { 
             let key;
-            if(dim === 'year') key = d.date.substring(0, 4) + '년'; 
+            if(dim === 'year') key = (d.date ? d.date.substring(0, 4) : '기타') + '년'; 
             else if(dim === 'month') key = formatYearMonth(d.date); 
             else key = d.type; 
             counts[key] = (counts[key] || 0) + 1; 
@@ -1098,21 +1198,21 @@
         const filterYear = document.getElementById('filterYearQms').value;
         const filterType = document.getElementById('filterTypeQms').value;
 
-        let years = new Set(qmsDocData.map(d => d.date.split('-')[0]));
+        let years = new Set(qmsDocData.map(d => d.date ? d.date.split('-')[0] : ''));
         let types = new Set(qmsDocData.map(d => d.type));
         
         const yearSelect = document.getElementById('filterYearQms');
         const typeSelect = document.getElementById('filterTypeQms');
         
         yearSelect.innerHTML = '<option value="ALL">전체 연도</option>';
-        [...years].sort().reverse().forEach(y => yearSelect.appendChild(new Option(y + '년', y)));
+        [...years].filter(y => y).sort().reverse().forEach(y => yearSelect.appendChild(new Option(y + '년', y)));
         yearSelect.value = filterYear;
 
         typeSelect.innerHTML = '<option value="ALL">전체 구분</option>';
         [...types].sort().forEach(t => typeSelect.appendChild(new Option(t, t)));
         typeSelect.value = filterType;
 
-        let filtered = qmsDocData.filter(d => (filterYear === 'ALL' || d.date.split('-')[0] === filterYear) && (filterType === 'ALL' || d.type === filterType));
+        let filtered = qmsDocData.filter(d => (filterYear === 'ALL' || (d.date && d.date.split('-')[0] === filterYear)) && (filterType === 'ALL' || d.type === filterType));
 
         drawQmsDynamicChart(filtered);
 
@@ -1129,34 +1229,52 @@
 
             tr.innerHTML = `<td style="color: ${typeColor}; font-weight: 900;">${d.type}</td><td style="font-weight: bold;">${d.docNo}</td><td style="font-weight: bold; text-align: left;">${d.name}</td>
                 <td>Rev. ${d.rev}</td><td>${d.date}</td><td style="text-align: left; color: #495057;">${d.reason}</td><td>${fileHTML}</td>
-                <td><button class="delete-btn no-print" onclick="deleteQmsDocument(${d.id})">삭제</button></td>`;
+                <td><button class="delete-btn no-print" onclick="deleteQmsDocument('${d.id}')">삭제</button></td>`;
             tbody.appendChild(tr);
         });
     }
 
     function addQmsDocument() {
-        requireAuth(() => {
+        requireAuth(async () => {
             const type = document.getElementById('inputDocType').value; const docNo = document.getElementById('inputDocNo').value.trim(); const name = document.getElementById('inputDocName').value.trim();
             const rev = document.getElementById('inputDocRev').value; const date = document.getElementById('inputDocDate').value; const reason = document.getElementById('inputDocReason').value.trim();
             const fileInput = document.getElementById('inputDocFile');
+            
             if(!docNo || !name || !date) return alert("필수 입력 항목 누락.");
 
-            const saveRecord = (fileData = null, fileName = null) => {
-                qmsDocData.push({ id: Date.now(), type, docNo, name, rev: parseInt(rev), date, reason, fileData, fileName });
-                try { localStorage.setItem('qmsDocData', JSON.stringify(qmsDocData)); } catch (e) { alert("⚠️ 파일 용량 초과."); qmsDocData.pop(); return; }
+            const saveRecord = async (fileData = null, fileName = null) => {
+                const newDoc = { id: Date.now().toString(), type, docNo, name, rev, date, reason, fileData, fileName };
+                qmsDocData.push(newDoc);
+                
                 document.getElementById('inputDocNo').value=''; document.getElementById('inputDocName').value=''; document.getElementById('inputDocRev').value='0';
                 document.getElementById('inputDocDate').value=''; document.getElementById('inputDocReason').value=''; fileInput.value='';
-                renderQmsDocTable(); alert("등록 완료.");
+                
+                renderQmsDocTable(); 
+                await sendToSheet('QMS', 'insert', newDoc);
+                alert("등록 완료.");
             };
 
             if (fileInput.files.length > 0) {
-                const file = fileInput.files[0]; if(file.size > 2 * 1024 * 1024) return alert("2MB 이하 첨부 요망.");
-                const reader = new FileReader(); reader.onload = function(e) { saveRecord(e.target.result, file.name); }; reader.readAsDataURL(file);
-            } else saveRecord(null, null); 
+                const file = fileInput.files[0]; 
+                if(file.size > 40 * 1024) return alert("구글 시트 연동 시 첨부 파일은 40KB 이하만 가능합니다.\n(대용량 파일은 구글 드라이브 링크를 설명란에 붙여넣어 활용하세요)");
+                const reader = new FileReader(); 
+                reader.onload = function(e) { saveRecord(e.target.result, file.name); }; 
+                reader.readAsDataURL(file);
+            } else {
+                saveRecord(null, null); 
+            }
         }, "QMS 양식/문서 등록");
     }
 
-    function deleteQmsDocument(id) { requireAuth(() => { if(confirm("삭제하시겠습니까?")) { qmsDocData = qmsDocData.filter(d => d.id !== id); localStorage.setItem('qmsDocData', JSON.stringify(qmsDocData)); renderQmsDocTable(); } }, "삭제"); }
+    function deleteQmsDocument(id) { 
+        requireAuth(async () => { 
+            if(confirm("삭제하시겠습니까?")) { 
+                qmsDocData = qmsDocData.filter(d => String(d.id) !== String(id)); 
+                renderQmsDocTable(); 
+                await sendToSheet('QMS', 'delete', null, id);
+            } 
+        }, "삭제"); 
+    }
 
     function setupImagePaste() {
         document.querySelectorAll('.rich-editor').forEach(editor => {
@@ -1165,7 +1283,10 @@
                 for (let i = 0; i < items.length; i++) {
                     if (items[i].type.indexOf("image") !== -1) {
                         e.preventDefault(); const blob = items[i].getAsFile(); const reader = new FileReader();
-                        reader.onload = function(event) { const img = document.createElement("img"); img.src = event.target.result; img.style.maxWidth = "100%"; img.style.marginTop = "10px"; editor.appendChild(img); };
+                        reader.onload = function(event) { 
+                            const img = document.createElement("img"); img.src = event.target.result; img.style.maxWidth = "100%"; img.style.marginTop = "10px"; 
+                            editor.appendChild(img); 
+                        };
                         reader.readAsDataURL(blob);
                     }
                 }
