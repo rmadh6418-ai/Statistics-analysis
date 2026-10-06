@@ -15,10 +15,14 @@
         body { font-family: 'Malgun Gothic', sans-serif; padding: 20px; background-color: #f8f9fa; margin: 0; color: #333; font-size: 16px; font-weight: bold; }
         .container { max-width: 1600px; margin: 0 auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         
-        .tab-menu { display: flex; gap: 8px; margin-bottom: 25px; border-bottom: 3px solid #dee2e6; padding-bottom: 0; align-items: flex-end; }
-        .new-tab-btn { flex: 1 1 0% !important; width: 100% !important; min-width: 0 !important; box-sizing: border-box !important; text-align: center !important; background: #e9ecef; border: 1px solid #dee2e6; border-bottom: none; padding: 13px 5px; font-size: 14.5px; font-weight: bold; cursor: pointer; border-radius: 8px 8px 0 0; color: #495057; transition: 0.2s; margin-bottom: -3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .new-tab-btn:hover { background: #dbe4eb; }
-        .new-tab-btn.active { background: #3498db; color: white; border-color: #3498db; }
+        /* 탭 메뉴 전체 꽉 채우기 설정 */
+        .tab-menu { display: flex !important; gap: 8px !important; margin-bottom: 25px !important; border-bottom: 3px solid #dee2e6 !important; padding-bottom: 0 !important; align-items: flex-end !important; width: 100% !important; box-sizing: border-box !important; }
+        
+        /* 모든 탭 버튼 강제 동일 비율 분할 (1:1:1...) */
+        .tab-btn { flex: 1 1 0% !important; width: auto !important; min-width: 0 !important; box-sizing: border-box !important; text-align: center !important; background: #e9ecef !important; border: 1px solid #dee2e6 !important; border-bottom: none !important; padding: 13px 5px !important; font-size: 14.5px !important; font-weight: bold !important; cursor: pointer !important; border-radius: 8px 8px 0 0 !important; color: #495057 !important; transition: 0.2s !important; margin-bottom: -3px !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+        .tab-btn:hover { background: #dbe4eb !important; }
+        .tab-btn.active { background: #3498db !important; color: white !important; border-color: #3498db !important; }
+
         .tab-content { display: none; animation: fadeIn 0.3s; }
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -57,8 +61,6 @@
         .metric-card .sub-text { font-size: 12px; color: #868e96; margin-top: 5px; display: block; font-weight: normal; }
         
         .chart-row { display: flex; gap: 25px; margin-bottom: 25px; flex-wrap: wrap;}
-        
-        /* 🚨 PC 화면 차트 삐져나옴 방지 (box-sizing 추가됨) 🚨 */
         .chart-box { flex: 1; min-width: 450px; background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; position: relative; box-sizing: border-box; }
         
         .table-container { max-height: 600px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 8px; }
@@ -120,7 +122,7 @@
         @media screen and (max-width: 768px) {
             .container { padding: 10px; width: 100%; box-sizing: border-box; overflow-x: hidden; }
             .tab-menu { flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; padding-bottom: 5px; }
-            .tab-btn { flex: 0 0 auto; padding: 10px 12px; font-size: 13px; }
+            .tab-btn { flex: 0 0 auto !important; width: auto !important; padding: 10px 12px; font-size: 13px; }
             .chart-row { flex-direction: column; }
             .chart-box { width: 100% !important; min-width: 0 !important; height: 350px !important; margin-bottom: 15px; padding: 10px; box-sizing: border-box; }
             .controls { flex-direction: column; align-items: stretch; }
@@ -146,13 +148,13 @@
     <h2 id="main-dashboard-title" style="margin-top:0; color: #343a40; font-weight: 900;">📊 제조 품질 통합 대시보드 <span style="font-size: 0.75em; color: #555;">- MSA Cg/Cgk 분석</span></h2>
     
     <div class="tab-menu">
-        <button class="new-tab-btn active" onclick="openTab('cgkTab', this)">MSA Cg/Cgk</button>
-        <button class="new-tab-btn" onclick="openTab('cpkTab', this)">CPK / PPK</button>
-        <button class="new-tab-btn" onclick="openTab('grrTab', this)">Gage R&R 분석</button>
-        <button class="new-tab-btn" onclick="openTab('supplierTab', this)">협력사 검사</button>
-        <button class="new-tab-btn" onclick="openTab('fourMTab', this)">4M 변경관리</button>
-        <button class="new-tab-btn" onclick="openTab('customerTab', this)">고객사 8D</button>
-        <button class="new-tab-btn" onclick="openTab('qmsTab', this)">QMS/문서</button>
+        <button class="tab-btn active" onclick="openTab('cgkTab', this)">MSA Cg/Cgk</button>
+        <button class="tab-btn" onclick="openTab('cpkTab', this)">CPK / PPK</button>
+        <button class="tab-btn" onclick="openTab('grrTab', this)">Gage R&R 분석</button>
+        <button class="tab-btn" onclick="openTab('supplierTab', this)">협력사 검사</button>
+        <button class="tab-btn" onclick="openTab('fourMTab', this)">4M 변경관리</button>
+        <button class="tab-btn" onclick="openTab('customerTab', this)">고객사 8D</button>
+        <button class="tab-btn" onclick="openTab('qmsTab', this)">QMS/문서</button>
         
         <button class="action-btn no-print" onclick="window.print()" style="margin-left: auto; background-color: #8e44ad; border-radius: 8px; font-size: 15px;">🖨️ 화면 인쇄</button>
     </div>
@@ -432,7 +434,7 @@
     // ==========================================
     // ⭐ [필수 입력] 구글 Apps Script에서 복사한 웹 앱 URL을 아래에 붙여넣으세요.
     // ==========================================
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyIYLm5qF_ZusuDT98RDrwL1xBbFwkGwnUSIKUjopQzkRX9-Vtp6wUgp8P1Qe-EzCk_/exec";
+    const GAS_API_URL = "https://script.google.com/macros/s/여기에_복사한_URL을_붙여넣으세요/exec";
 
     // 구글 시트 데이터 가져오기 (공통 함수)
     async function fetchFromSheet(sheetName) {
