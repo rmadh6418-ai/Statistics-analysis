@@ -15,11 +15,11 @@
         body { font-family: 'Malgun Gothic', sans-serif; padding: 20px; background-color: #f8f9fa; margin: 0; color: #333; font-size: 16px; font-weight: bold; }
         .container { max-width: 1600px; margin: 0 auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         
-        /* 🚨 탭 메뉴 왼쪽으로 차곡차곡 모으기 (크기 억지로 안 늘림) 🚨 */
+        /* 🚨 탭 메뉴 왼쪽 정렬 유지 */
         .tab-menu { display: flex; gap: 8px; margin-bottom: 25px; border-bottom: 3px solid #dee2e6; padding-bottom: 0; align-items: flex-end; width: 100%; box-sizing: border-box; flex-wrap: wrap; }
         
-        /* 모든 탭 버튼이 내부 글자 길이만큼만 크기를 차지함 */
-        .tab-btn { flex: 0 0 auto; width: auto; text-align: center; background: #e9ecef; border: 1px solid #dee2e6; border-bottom: none; padding: 13px 18px; font-size: 14.5px; font-weight: bold; cursor: pointer; border-radius: 8px 8px 0 0; color: #495057; transition: 0.2s; margin-bottom: -3px; white-space: nowrap; }
+        /* 🚨 한글/영문 폰트 높이 차이 무시하고 높이(height)를 46px로 완벽 고정 */
+        .tab-btn { flex: 0 0 auto; width: auto; height: 46px; display: flex; align-items: center; justify-content: center; padding: 0 18px; box-sizing: border-box; text-align: center; background: #e9ecef; border: 1px solid #dee2e6; border-bottom: none; font-size: 14.5px; font-weight: bold; cursor: pointer; border-radius: 8px 8px 0 0; color: #495057; transition: 0.2s; margin-bottom: -3px; white-space: nowrap; }
         .tab-btn:hover { background: #dbe4eb; }
         .tab-btn.active { background: #3498db; color: white; border-color: #3498db; }
 
