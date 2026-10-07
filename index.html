@@ -15,11 +15,11 @@
         body { font-family: 'Malgun Gothic', sans-serif; padding: 20px; background-color: #f8f9fa; margin: 0; color: #333; font-size: 16px; font-weight: bold; }
         .container { max-width: 1600px; margin: 0 auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         
-        /* 탭 메뉴 전체 꽉 채우기 설정 */
-        .tab-menu { display: flex !important; gap: 8px !important; margin-bottom: 25px !important; border-bottom: 3px solid #dee2e6 !important; padding-bottom: 0 !important; align-items: flex-end !important; width: 100% !important; box-sizing: border-box !important; }
-        
-        /* 모든 탭 버튼 강제 동일 비율 분할 (1:1:1...) */
-        .tab-btn { flex: 1 1 0% !important; width: auto !important; min-width: 0 !important; box-sizing: border-box !important; text-align: center !important; background: #e9ecef !important; border: 1px solid #dee2e6 !important; border-bottom: none !important; padding: 13px 5px !important; font-size: 14.5px !important; font-weight: bold !important; cursor: pointer !important; border-radius: 8px 8px 0 0 !important; color: #495057 !important; transition: 0.2s !important; margin-bottom: -3px !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+        /* 1. 탭 메뉴 전체 영역 (Grid 레이아웃으로 완벽한 등분 분할) */
+        .tab-menu { display: grid !important; grid-template-columns: repeat(7, 1fr) auto !important; gap: 8px !important; margin-bottom: 25px !important; border-bottom: 3px solid #dee2e6 !important; padding-bottom: 0 !important; align-items: end !important; width: 100% !important; box-sizing: border-box !important; }
+
+        /* 2. 개별 탭 버튼 (강제 100% 영역 채우기) */
+        .tab-btn { width: 100% !important; box-sizing: border-box !important; text-align: center !important; background: #e9ecef !important; border: 1px solid #dee2e6 !important; border-bottom: none !important; padding: 13px 5px !important; font-size: 14.5px !important; font-weight: bold !important; cursor: pointer !important; border-radius: 8px 8px 0 0 !important; color: #495057 !important; transition: 0.2s !important; margin-bottom: -3px !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
         .tab-btn:hover { background: #dbe4eb !important; }
         .tab-btn.active { background: #3498db !important; color: white !important; border-color: #3498db !important; }
 
@@ -121,8 +121,8 @@
         /* 📱 모바일 최적화 CSS */
         @media screen and (max-width: 768px) {
             .container { padding: 10px; width: 100%; box-sizing: border-box; overflow-x: hidden; }
-            .tab-menu { flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; padding-bottom: 5px; }
-            .tab-btn { flex: 0 0 auto !important; width: auto !important; padding: 10px 12px; font-size: 13px; }
+            .tab-menu { display: flex !important; flex-wrap: nowrap !important; overflow-x: auto !important; white-space: nowrap !important; padding-bottom: 5px !important; }
+            .tab-btn { width: auto !important; padding: 10px 12px !important; font-size: 13px !important; flex: 0 0 auto !important; }
             .chart-row { flex-direction: column; }
             .chart-box { width: 100% !important; min-width: 0 !important; height: 350px !important; margin-bottom: 15px; padding: 10px; box-sizing: border-box; }
             .controls { flex-direction: column; align-items: stretch; }
@@ -434,7 +434,7 @@
     // ==========================================
     // ⭐ [필수 입력] 구글 Apps Script에서 복사한 웹 앱 URL을 아래에 붙여넣으세요.
     // ==========================================
-    const GAS_API_URL = "https://script.google.com/macros/s/여기에_복사한_URL을_붙여넣으세요/exec";
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyIYLm5qF_ZusuDT98RDrwL1xBbFwkGwnUSIKUjopQzkRX9-Vtp6wUgp8P1Qe-EzCk_/exec";
 
     // 구글 시트 데이터 가져오기 (공통 함수)
     async function fetchFromSheet(sheetName) {
