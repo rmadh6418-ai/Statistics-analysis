@@ -15,13 +15,41 @@
         body { font-family: 'Malgun Gothic', sans-serif; padding: 20px; background-color: #f8f9fa; margin: 0; color: #333; font-size: 16px; font-weight: bold; }
         .container { max-width: 1600px; margin: 0 auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         
-        /* 1. 탭 메뉴 전체 영역 (Grid 레이아웃으로 완벽한 등분 분할) */
-        .tab-menu { display: grid !important; grid-template-columns: repeat(7, 1fr) auto !important; gap: 8px !important; margin-bottom: 25px !important; border-bottom: 3px solid #dee2e6 !important; padding-bottom: 0 !important; align-items: end !important; width: 100% !important; box-sizing: border-box !important; }
-
-        /* 2. 개별 탭 버튼 (강제 100% 영역 채우기) */
-        .tab-btn { width: 100% !important; box-sizing: border-box !important; text-align: center !important; background: #e9ecef !important; border: 1px solid #dee2e6 !important; border-bottom: none !important; padding: 13px 5px !important; font-size: 14.5px !important; font-weight: bold !important; cursor: pointer !important; border-radius: 8px 8px 0 0 !important; color: #495057 !important; transition: 0.2s !important; margin-bottom: -3px !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
-        .tab-btn:hover { background: #dbe4eb !important; }
-        .tab-btn.active { background: #3498db !important; color: white !important; border-color: #3498db !important; }
+        /* 🚨 탭 메뉴 1:1 비율 완벽 고정 (Grid 레이아웃 적용) 🚨 */
+        .tab-menu { 
+            display: grid !important; 
+            grid-template-columns: repeat(7, 1fr) auto !important; 
+            gap: 8px !important; 
+            margin-bottom: 25px !important; 
+            border-bottom: 3px solid #dee2e6 !important; 
+            padding-bottom: 0 !important; 
+            align-items: end !important; 
+            width: 100% !important; 
+            box-sizing: border-box !important; 
+        }
+        
+        .tab-btn { 
+            width: 100% !important; 
+            box-sizing: border-box !important; 
+            text-align: center !important; 
+            background: #e9ecef; 
+            border: 1px solid #dee2e6; 
+            border-bottom: none; 
+            padding: 13px 5px; 
+            font-size: 14.5px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            border-radius: 8px 8px 0 0; 
+            color: #495057; 
+            transition: 0.2s; 
+            margin-bottom: -3px; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+        }
+        
+        .tab-btn:hover { background: #dbe4eb; }
+        .tab-btn.active { background: #3498db; color: white; border-color: #3498db; }
 
         .tab-content { display: none; animation: fadeIn 0.3s; }
         .tab-content.active { display: block; }
@@ -118,7 +146,7 @@
             tr { page-break-inside: avoid; }
         }
 
-        /* 📱 모바일 최적화 CSS */
+        /* 📱 모바일 최적화 CSS (모바일에서는 다시 가로 스크롤로 풀기) */
         @media screen and (max-width: 768px) {
             .container { padding: 10px; width: 100%; box-sizing: border-box; overflow-x: hidden; }
             .tab-menu { display: flex !important; flex-wrap: nowrap !important; overflow-x: auto !important; white-space: nowrap !important; padding-bottom: 5px !important; }
@@ -156,7 +184,7 @@
         <button class="tab-btn" onclick="openTab('customerTab', this)">고객사 8D</button>
         <button class="tab-btn" onclick="openTab('qmsTab', this)">QMS/문서</button>
         
-        <button class="action-btn no-print" onclick="window.print()" style="margin-left: auto; background-color: #8e44ad; border-radius: 8px; font-size: 15px;">🖨️ 화면 인쇄</button>
+        <button class="action-btn no-print" onclick="window.print()" style="justify-self: end; margin-bottom: 5px; background-color: #8e44ad; border-radius: 8px; font-size: 15px;">🖨️ 화면 인쇄</button>
     </div>
 
     <!-- 1. Cg/Cgk 탭 -->
@@ -432,7 +460,7 @@
 
 <script>
     // ==========================================
-    // ⭐ [필수 입력] 구글 Apps Script에서 복사한 웹 앱 URL을 아래에 붙여넣으세요.
+    // ⭐ [필수 입력] 구글 Apps Script에서 복사한 웹 앱 URL을 아래에 꼭 붙여넣으세요!
     // ==========================================
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyIYLm5qF_ZusuDT98RDrwL1xBbFwkGwnUSIKUjopQzkRX9-Vtp6wUgp8P1Qe-EzCk_/exec";
 
