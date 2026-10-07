@@ -15,11 +15,11 @@
         body { font-family: 'Malgun Gothic', sans-serif; padding: 20px; background-color: #f8f9fa; margin: 0; color: #333; font-size: 16px; font-weight: bold; }
         .container { max-width: 1600px; margin: 0 auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         
-        /* 🚨 탭 메뉴 왼쪽 정렬 유지 */
-        .tab-menu { display: flex; gap: 8px; margin-bottom: 25px; border-bottom: 3px solid #dee2e6; padding-bottom: 0; align-items: flex-end; width: 100%; box-sizing: border-box; flex-wrap: wrap; }
+        /* 🚨 1. 탭 메뉴를 인쇄 버튼 앞까지 꽉 채우기 */
+        .tab-menu { display: flex; gap: 8px; margin-bottom: 25px; border-bottom: 3px solid #dee2e6; padding-bottom: 0; align-items: flex-end; width: 100%; box-sizing: border-box; }
         
-        /* 🚨 한글/영문 폰트 높이 차이 무시하고 높이(height)를 46px로 완벽 고정 */
-        .tab-btn { flex: 0 0 auto; width: auto; height: 46px; display: flex; align-items: center; justify-content: center; padding: 0 18px; box-sizing: border-box; text-align: center; background: #e9ecef; border: 1px solid #dee2e6; border-bottom: none; font-size: 14.5px; font-weight: bold; cursor: pointer; border-radius: 8px 8px 0 0; color: #495057; transition: 0.2s; margin-bottom: -3px; white-space: nowrap; }
+        /* 모든 탭 버튼이 1:1 동일 비율로 넓어지며 높이는 46px로 고정 */
+        .tab-btn { flex: 1 1 0%; height: 46px; display: flex; align-items: center; justify-content: center; padding: 0 5px; box-sizing: border-box; text-align: center; background: #e9ecef; border: 1px solid #dee2e6; border-bottom: none; font-size: 14.5px; font-weight: bold; cursor: pointer; border-radius: 8px 8px 0 0; color: #495057; transition: 0.2s; margin-bottom: -3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .tab-btn:hover { background: #dbe4eb; }
         .tab-btn.active { background: #3498db; color: white; border-color: #3498db; }
 
@@ -392,6 +392,8 @@
             <h3 style="margin:0 15px 0 0; color:#1565c0; display:flex; align-items:center;">🔍 문서 이력 필터</h3>
             <div class="control-group"><label>연도 선택</label><select id="filterYearQms" onchange="renderQmsDocTable()"><option value="ALL">전체 연도</option></select></div>
             <div class="control-group"><label>문서 구분</label><select id="filterTypeQms" onchange="renderQmsDocTable()"><option value="ALL">전체 구분</option></select></div>
+            <!-- 👇 새롭게 추가된 '최신 파일만 보기' 드롭다운 👇 -->
+            <div class="control-group"><label>최신 파일</label><select id="filterLatestQms" onchange="renderQmsDocTable()"><option value="ALL">전체 이력 보기</option><option value="LATEST">최신 Rev.만 보기</option></select></div>
         </div>
 
         <div class="data-card" style="background:#f8f9fa;">
@@ -1215,6 +1217,8 @@
     function renderQmsDocTable() {
         const filterYear = document.getElementById('filterYearQms').value;
         const filterType = document.getElementById('filterTypeQms').value;
+        // 새로 추가된 필터링 값 가져오기
+        const filterLatest = document.getElementById('filterLatestQms') ? document.getElementById('filterLatestQms').value : 'ALL';
 
         let years = new Set(qmsDocData.map(d => d.date ? d.date.split('-')[0] : ''));
         let types = new Set(qmsDocData.map(d => d.type));
@@ -1230,7 +1234,20 @@
         [...types].sort().forEach(t => typeSelect.appendChild(new Option(t, t)));
         typeSelect.value = filterType;
 
+        // 1차 필터 (연도, 문서구분)
         let filtered = qmsDocData.filter(d => (filterYear === 'ALL' || (d.date && d.date.split('-')[0] === filterYear)) && (filterType === 'ALL' || d.type === filterType));
+
+        // 🚨 2차 필터 (최신 파일만 모아보기 로직 추가)
+        if (filterLatest === 'LATEST') {
+            let latestMap = {};
+            filtered.forEach(d => {
+                // 문서/양식 번호(docNo)가 같은 것들 중 Rev 숫자가 가장 높은 것만 덮어쓰면서 남김
+                if (!latestMap[d.docNo] || parseInt(d.rev) > parseInt(latestMap[d.docNo].rev)) {
+                    latestMap[d.docNo] = d;
+                }
+            });
+            filtered = Object.values(latestMap); // 살아남은 최신본들만 다시 배열로 변환
+        }
 
         drawQmsDynamicChart(filtered);
 
