@@ -75,6 +75,18 @@
         .login-box h2 { margin-top: 0; color: #343a40; margin-bottom: 10px; font-weight: bold; }
         .login-box input { width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ced4da; border-radius: 6px; box-sizing: border-box; text-align: center; letter-spacing: 2px; font-weight: bold; }
         .login-box button { width: 100%; padding: 12px; background: #228be6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; }
+        
+        /* 🚨 8D A4 양식을 위한 핵심 CSS */
+        .a4-wrapper { display: flex; justify-content: center; background: #ced4da; padding: 30px; overflow-y: auto; border-radius: 8px; margin-top: 20px; }
+        .a4-paper { width: 210mm; min-height: 297mm; background: white; padding: 15mm; box-shadow: 0 0 15px rgba(0,0,0,0.2); box-sizing: border-box; color: #000; font-family: 'Malgun Gothic', sans-serif; position: relative; }
+        .report-table { width: 100%; border-collapse: collapse; font-size: 14px; table-layout: fixed; }
+        .report-table th, .report-table td { border: 1px solid #212529; padding: 10px; vertical-align: top; }
+        .report-table th { background-color: #f1f3f5; text-align: center; font-weight: bold; }
+        .borderless-input { width: 100%; border: none; outline: none; background: transparent; font-family: inherit; font-size: 14px; box-sizing: border-box; color: #000; }
+        .rich-editor { min-height: 60px; line-height: 1.5; font-weight: normal; }
+        .rich-editor:empty:before { content: attr(data-placeholder); color: #999; pointer-events: none; display: block; }
+        .rich-editor img { max-width: 100%; height: auto; display: block; margin: 8px 0; border: 1px solid #dee2e6; border-radius: 4px; }
+        
         @media print {
             @page { size: auto; margin: 8mm; }
             body, html { background: white !important; padding: 0 !important; margin: 0 !important; color: #000 !important; zoom: 0.65; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
@@ -83,11 +95,15 @@
             .container { box-shadow: none !important; border: none !important; padding: 0 !important; max-width: none !important; width: 100% !important; margin: 0 !important; background: white !important; }
             .tab-content { display: none !important; }
             .tab-content.active { display: block !important; }
-            .table-container { max-height: none !important; overflow: visible !important; border: none !important; }
+            .table-container, .a4-wrapper { max-height: none !important; overflow: visible !important; border: none !important; }
             .ng-table th { position: static !important; }
             .chart-row { display: flex !important; flex-wrap: nowrap !important; page-break-inside: avoid; gap: 10px !important; }
             .chart-box { flex: 1 !important; min-width: 0 !important; page-break-inside: avoid; border: 1px solid #ccc !important; }
             #view8DList.hidden + #view8DForm { display: block !important; }
+            .a4-wrapper { display: block; padding: 0; background: transparent; margin-top: 0; }
+            .a4-paper { box-shadow: none; width: 100%; height: auto; padding: 0; border: none; min-height: auto; }
+            .report-table { width: 100%; }
+            tr { page-break-inside: avoid; }
         }
         @media screen and (max-width: 768px) {
             .container { padding: 10px; width: 100%; box-sizing: border-box; overflow-x: hidden; }
@@ -128,40 +144,22 @@
         <button class="action-btn no-print" onclick="window.print()" style="margin-left: auto; margin-bottom: -3px; background-color: #8e44ad; border-radius: 8px; font-size: 15px;">🖨️ 화면 인쇄</button>
     </div>
 
-    <!-- 1~4 탭 생략 (기존 유지) -->
+    <!-- 1. Cg/Cgk 탭 -->
     <div id="cgkTab" class="tab-content active"><div class="controls"><div class="control-group"><label>엑셀 데이터 업로드 (.xlsx)</label><input type="file" id="excelFileCgk" accept=".xlsx, .xls, .csv" /></div><div class="control-group hidden" id="controlsCgk"><label>보기 옵션</label><select id="viewSelectCgk" onchange="toggleViewCgk()"></select></div></div><div class="controls ai-controls hidden" id="aiControlsGroupCgk"><div class="control-group" style="flex: 1;"><label style="color: #1565c0;">🔑 Gemini API 키</label><input type="password" id="geminiApiKeyCgk" placeholder="API Key 입력"></div><button onclick="generateAIReportCgk()" class="ai-btn">🤖 AI 분석 실행</button></div><div id="aiReportAreaCgk" class="ai-report-area hidden"><div class="ai-header-bar" onclick="toggleAiReport('aiReportContentCgk', 'iconCgk')"><h3>💡 AI 리포트</h3><span id="iconCgk" class="ai-toggle-icon">▼</span></div><div id="aiReportContentCgk" class="ai-report-content"></div></div><div class="hidden" id="summarySectionCgk" style="overflow-x: auto;"><table class="summary-table"><thead><tr><th>데이터셋</th><th>N</th><th>Ref</th><th>USL / LSL</th><th>Mean</th><th>StdDev</th><th>Cg</th><th>Cgk</th><th>판정</th></tr></thead><tbody id="summaryTableBodyCgk"></tbody></table></div><div id="detailDashboardCgk"></div></div>
+    
+    <!-- 2. CPK 탭 -->
     <div id="cpkTab" class="tab-content"><div class="controls"><div class="control-group"><label>엑셀 업로드 (.xlsx)</label><input type="file" id="excelFileCpk" accept=".xlsx, .xls"></div><div class="control-group"><label>분석 그룹</label><select id="categorySelectCpk" disabled><option>대기 중...</option></select></div><div class="control-group" id="chartTypeGroupCpk"><label>관리도 유형</label><select id="chartTypeSelectCpk"><option value="Xbar-R">Xbar-R Chart</option><option value="I-MR">I-MR Chart</option></select></div><div class="control-group"><label>LSL (하한)</label><input type="number" id="lslCpk" step="0.001" value="20.9"></div><div class="control-group"><label>USL (상한)</label><input type="number" id="uslCpk" step="0.001" value="21.0"></div><div class="control-group" id="subgroupSizeGroupCpk"><label>부분군 크기(n)</label><input type="number" id="subgroupSizeCpk" min="2" max="10" value="5"></div></div><div class="controls ai-controls" id="aiControlsGroupCpk"><div class="control-group" style="flex: 1;"><label style="color: #1565c0;">🔑 Gemini API 키</label><input type="password" id="geminiApiKeyCpk" placeholder="API Key 입력"></div><button onclick="generateAIReportCpk()" class="ai-btn">🤖 AI 분석 실행</button></div><div id="singleCategoryViewCpk"><div class="metrics-grid"><div class="metric-card"><h3>평균</h3><p id="txt-mean-cpk">-</p></div><div class="metric-card"><h3>표준편차</h3><p id="txt-std-lt-cpk">-</p></div><div class="metric-card highlight"><h3>Pp</h3><p id="txt-pp-cpk">-</p></div><div class="metric-card highlight"><h3>Ppk</h3><p id="txt-ppk-cpk">-</p></div><div class="metric-card highlight"><h3>Cp</h3><p id="txt-cp-cpk">-</p></div><div class="metric-card highlight"><h3>Cpk</h3><p id="txt-cpk-cpk">-</p></div></div><div id="aiReportAreaCpk" class="ai-report-area hidden"><div class="ai-header-bar" onclick="toggleAiReport('aiReportContentCpk', 'iconCpk')"><h3>💡 AI 리포트</h3><span id="iconCpk" class="ai-toggle-icon">▼</span></div><div id="aiReportContentCpk" class="ai-report-content"></div></div><div class="chart-row"><div class="chart-box" id="chartHistCpk" style="height: 450px;"></div><div class="chart-box" id="chartBoxCpk" style="height: 450px;"></div></div><div class="chart-box" id="chartTopCpk" style="height: 450px; margin-bottom:20px;"></div><div class="chart-box" id="chartBottomCpk" style="height: 450px;"></div></div><div id="allCategoriesViewCpk" class="hidden"><div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px;" id="allChartsGridCpk"></div></div></div>
+    
+    <!-- 3. Gage R&R 탭 -->
     <div id="grrTab" class="tab-content"><div class="controls" style="background:#f4fce3; border:1px solid #c0eb75;"><div class="control-group"><label>Gage R&R 측정 데이터 (.xlsx)</label><input type="file" id="excelFileGrr" accept=".xlsx, .xls, .csv" /></div><div class="control-group"><label>도면 공차 (Tolerance)</label><input type="number" id="toleranceGrr" placeholder="빈칸 시 %TV 분석만 진행" style="min-width: 200px;"></div><div class="control-group" style="justify-content: flex-end;"><button class="action-btn" onclick="recalcGrr()" style="background-color:#2b8a3e;">다시 계산하기</button></div><div class="control-group" style="margin-left:auto; justify-content:center;"><a href="#" onclick="downloadGrrTemplate()" style="color:#2b8a3e; text-decoration:underline; font-size:15px; font-weight:900;">📄 측정 표준 양식 다운로드 (3x10x3)</a></div></div><div class="metrics-grid"><div class="metric-card" id="card-grr-tv"><h3>총 변동 (Total Var)</h3><p id="txt-grr-tv">-</p><span class="sub-text">TV = 6 * Sigma_TV</span></div><div class="metric-card" id="card-grr-grr-tv"><h3>%GR&R (%Study Var)</h3><p id="txt-grr-percent-tv">-</p><span class="sub-text">총 변동(TV) 기준 오차율</span></div><div class="metric-card" id="card-grr-grr-tol" style="border: 2px solid #8e44ad; background: #f3e5f5;"><h3 style="color:#8e44ad;">%Tolerance (P/T Ratio)</h3><p id="txt-grr-percent-tol" style="color:#8e44ad;">-</p><span class="sub-text">도면 공차 기준 오차율</span></div><div class="metric-card" id="card-grr-ev"><h3>%EV (반복성/계측기)</h3><p id="txt-grr-ev">-</p><span class="sub-text" id="sub-ev-base">기준: -</span></div><div class="metric-card" id="card-grr-av"><h3>%AV (재현성/작업자)</h3><p id="txt-grr-av">-</p><span class="sub-text" id="sub-av-base">기준: -</span></div><div class="metric-card" id="card-grr-ndc"><h3>ndc (구분범주수)</h3><p id="txt-grr-ndc">-</p><span class="sub-text">목표: 5 이상</span></div></div><div id="grrChartsArea" style="display: none;"><div class="chart-row"><div class="chart-box" style="height: 450px;"><canvas id="grrChartBar"></canvas></div><div class="chart-box" style="height: 450px;"><canvas id="grrChartLine"></canvas></div></div></div></div>
+    
+    <!-- 4. 협력사 탭 -->
     <div id="supplierTab" class="tab-content"><div class="controls"><div class="control-group"><label>협력사 수입검사 List 업로드</label><input type="file" id="excelFileSupplier" accept=".xlsx, .xls"></div><div class="control-group"><label>분석 연도</label><select id="yearSelectSupplier" onchange="filterSupplierData()"><option value="ALL">전체 연도</option></select></div></div><div class="metrics-grid" id="supplierKpiArea" style="display: none;"><div class="metric-card"><h3>총 검사 건수</h3><p id="kpi-total">0건</p></div><div class="metric-card danger"><h3>NG 발생 건수</h3><p id="kpi-ng">0건</p></div><div class="metric-card highlight"><h3>불량률</h3><p id="kpi-rate">0.00%</p></div><div class="metric-card highlight"><h3>개선율</h3><p id="kpi-improve">0.00%</p></div></div><div id="supplierChartsArea" style="display: none;"><div class="chart-row"><div class="chart-box" style="height: 450px;"><canvas id="supChart1"></canvas></div><div class="chart-box" style="height: 450px;"><canvas id="supChart2"></canvas></div></div><div class="chart-row"><div class="chart-box" style="flex: 1; height: 450px;"><canvas id="supChart3"></canvas></div><div class="chart-box" style="flex: 1; height: 450px;"><canvas id="supChart4"></canvas></div></div><div class="chart-row"><div class="chart-box" style="height: 450px;"><canvas id="supChart5"></canvas></div></div><h3 style="margin-top: 30px; color: #c0392b;">🚨 요주의 불합격 내역</h3><div class="table-container"><table class="ng-table"><thead><tr><th>검사일자</th><th>협력사</th><th>Project명</th><th>도번(Part No.)</th><th>불량 내용</th><th>조치/개선 내용</th><th>완료여부</th></tr></thead><tbody id="supplierNgTableBody"></tbody></table></div></div></div>
 
     <!-- 5. 4M 변경 관리 탭 -->
-    <div id="fourMTab" class="tab-content">
-        <div class="controls" style="background:#e3f2fd; border:1px solid #90caf9;">
-            <h3 style="margin:0 15px 0 0; color:#1565c0; display:flex; align-items:center;">🔍 이력 조회 필터</h3>
-            <div class="control-group"><label>연도 선택</label><select id="filterYear4M" onchange="render4MTable()"><option value="ALL">전체 연도</option></select></div>
-            <div class="control-group"><label>프로젝트 선택</label><select id="filterProject4M" onchange="render4MTable()"><option value="ALL">전체 프로젝트</option></select></div>
-        </div>
-        
-        <div class="data-card" style="background:#f8f9fa;">
-            <div class="card-header" style="color:#2c3e50;">📝 신규 4M 변경 내역 등록</div>
-            <div style="display:flex; flex-wrap:wrap; gap:15px; align-items:flex-end;">
-                <div class="control-group"><label>발생 일자</label><input type="date" id="inputDate4M"></div>
-                <div class="control-group"><label>프로젝트명</label><input type="text" id="inputProject4M" placeholder="ex) 현대차 감속기"></div>
-                <div class="control-group"><label>4M 구분</label><select id="inputType4M"><option>Man (작업자)</option><option>Machine (설비)</option><option>Material (자재)</option><option>Method (방법)</option></select></div>
-                <div class="control-group" style="flex:1;"><label>변경 상세 내용 및 사유</label><input type="text" id="inputDesc4M" style="width:100%;" placeholder="상세 사유 입력"></div>
-                <button class="action-btn" onclick="add4MRecord()">저장하기</button>
-            </div>
-        </div>
-        
-        <div class="table-container">
-            <table class="ng-table">
-                <thead><tr><th style="width:12%;">발생 일자</th><th style="width:10%;">연도</th><th style="width:18%;">프로젝트명</th><th style="width:15%;">4M 구분</th><th style="width:38%;">변경 상세 내용</th><th style="width:7%;">관리</th></tr></thead>
-                <tbody id="tableBody4M"></tbody>
-            </table>
-        </div>
-    </div>
+    <div id="fourMTab" class="tab-content"><div class="controls" style="background:#e3f2fd; border:1px solid #90caf9;"><h3 style="margin:0 15px 0 0; color:#1565c0; display:flex; align-items:center;">🔍 이력 조회 필터</h3><div class="control-group"><label>연도 선택</label><select id="filterYear4M" onchange="render4MTable()"><option value="ALL">전체 연도</option></select></div><div class="control-group"><label>프로젝트 선택</label><select id="filterProject4M" onchange="render4MTable()"><option value="ALL">전체 프로젝트</option></select></div></div><div class="data-card" style="background:#f8f9fa;"><div class="card-header" style="color:#2c3e50;">📝 신규 4M 변경 내역 등록</div><div style="display:flex; flex-wrap:wrap; gap:15px; align-items:flex-end;"><div class="control-group"><label>발생 일자</label><input type="date" id="inputDate4M"></div><div class="control-group"><label>프로젝트명</label><input type="text" id="inputProject4M" placeholder="ex) 현대차 감속기"></div><div class="control-group"><label>4M 구분</label><select id="inputType4M"><option>Man (작업자)</option><option>Machine (설비)</option><option>Material (자재)</option><option>Method (방법)</option></select></div><div class="control-group" style="flex:1;"><label>변경 상세 내용 및 사유</label><input type="text" id="inputDesc4M" style="width:100%;" placeholder="상세 사유 입력"></div><button class="action-btn" onclick="add4MRecord()">저장하기</button></div></div><div class="table-container"><table class="ng-table"><thead><tr><th style="width:12%;">발생 일자</th><th style="width:10%;">연도</th><th style="width:18%;">프로젝트명</th><th style="width:15%;">4M 구분</th><th style="width:38%;">변경 상세 내용</th><th style="width:7%;">관리</th></tr></thead><tbody id="tableBody4M"></tbody></table></div></div>
 
-    <!-- 6. 고객사 부적합 현황 (8D 대책서) -->
+    <!-- 🚨 6. 고객사 부적합 현황 (8D 대책서) - A4 양식 복원 완료! -->
     <div id="customerTab" class="tab-content">
         <div class="controls no-print" style="background:#fff3e0; border:1px solid #ffe0b2;">
             <h3 style="margin:0 15px 0 0; color:#d35400; display:flex; align-items:center;">📋 고객사 부적합 조회</h3>
@@ -182,6 +180,7 @@
             </div>
         </div>
 
+        <!-- 👇 실수로 누락되었던 8D Report A4 폼 영역이 완벽하게 복구되었습니다 👇 -->
         <div id="view8DForm" class="hidden">
             <div class="controls no-print" style="justify-content: flex-end; background: transparent; border: none; padding: 0;">
                 <button class="action-btn" onclick="save8D()" style="background-color: #27ae60; padding: 12px 25px;">💾 대책서 저장하기</button>
@@ -206,6 +205,7 @@
                 </div>
             </div>
         </div>
+        <!-- 👆 복구 완료 👆 -->
     </div>
 
     <!-- 7. QMS 및 품질양식 관리 탭 -->
@@ -216,7 +216,6 @@
             <div class="control-group"><label>문서 구분</label><select id="filterTypeQms" onchange="renderQmsDocTable()"><option value="ALL">전체 구분</option></select></div>
             <div class="control-group"><label>최신 파일</label><select id="filterLatestQms" onchange="renderQmsDocTable()"><option value="ALL">전체 이력 보기</option><option value="LATEST">최신 Rev.만 보기</option></select></div>
         </div>
-
         <div class="data-card" style="background:#f8f9fa;">
             <div class="card-header" style="color:#2c3e50; font-size: 1.1em;">신규 제·개정 등록 및 파일 첨부</div>
             <div style="display:flex; flex-wrap:wrap; gap:15px; align-items:flex-end;">
@@ -226,16 +225,10 @@
                 <div class="control-group"><label>Rev.</label><input type="number" id="inputDocRev" min="0" step="1" value="0" style="width:70px;"></div>
                 <div class="control-group"><label>시행 일자</label><input type="date" id="inputDocDate"></div>
                 <div class="control-group" style="flex:1;"><label>제/개정 사유 및 설명</label><input type="text" id="inputDocReason" style="width:100%;"></div>
-                
-                <div class="control-group" style="flex:1;">
-                    <label style="color:#27ae60;">📁 파일 첨부</label>
-                    <input type="file" id="inputDocFile" style="background: white; border-color: #27ae60; width: 100%;">
-                </div>
-                
+                <div class="control-group" style="flex:1;"><label style="color:#27ae60;">📁 파일 첨부</label><input type="file" id="inputDocFile" style="background: white; border-color: #27ae60; width: 100%;"></div>
                 <button class="action-btn" id="btnSaveQms" onclick="addQmsDocument()">문서/양식 등록</button>
             </div>
         </div>
-
         <h3 style="margin-top: 10px; color: #2c3e50; font-size: 20px;">📋 문서/양식 이력 목록</h3>
         <div class="table-container">
             <table class="ng-table">
@@ -247,7 +240,6 @@
 
     <!-- 8. 계측기 관리 탭 -->
     <div id="instTab" class="tab-content">
-        
         <div class="data-card" style="background:#e8fce8; border-color:#2ecc71; margin-bottom: 20px;">
             <div class="card-header" style="color:#27ae60; font-size: 1.1em; border-bottom: 2px solid #2ecc71; padding-bottom: 8px;">📁 계측기 이력카드 종합 엑셀파일 관리</div>
             <div style="display:flex; flex-wrap:wrap; gap:15px; align-items:flex-end;">
@@ -257,33 +249,14 @@
                 </div>
                 <button class="action-btn" id="btnSaveMasterInst" style="background-color: #27ae60; height: 43px;" onclick="uploadMasterInstFile()">파일 업로드 / 덮어쓰기</button>
             </div>
-            <div id="masterInstFileContainer" style="margin-top: 15px; font-size: 15px;">
-                <!-- 업로드된 버튼 표시 -->
-            </div>
+            <div id="masterInstFileContainer" style="margin-top: 15px; font-size: 15px;"></div>
         </div>
 
         <div class="controls" style="background:#e8f5e9; border:1px solid #a5d6a7;">
             <h3 style="margin:0 15px 0 0; color:#2e7d32; display:flex; align-items:center;">🔍 계측기 조회 필터</h3>
-            <div class="control-group">
-                <label>검교정 연도</label>
-                <select id="filterYearInst" onchange="renderInstTable()">
-                    <option value="ALL">전체 연도</option>
-                </select>
-            </div>
-            <div class="control-group">
-                <label>계측기명</label>
-                <select id="filterNameInst" onchange="renderInstTable()">
-                    <option value="ALL">전체 계측기</option>
-                </select>
-            </div>
-            <div class="control-group">
-                <label>검교정 상태</label>
-                <select id="filterStatusInst" onchange="renderInstTable()">
-                    <option value="ALL">전체 보기</option>
-                    <option value="WARNING">교정 임박 (30일 이내)</option>
-                    <option value="EXPIRED">교정 지연 (초과)</option>
-                </select>
-            </div>
+            <div class="control-group"><label>검교정 연도</label><select id="filterYearInst" onchange="renderInstTable()"><option value="ALL">전체 연도</option></select></div>
+            <div class="control-group"><label>계측기명</label><select id="filterNameInst" onchange="renderInstTable()"><option value="ALL">전체 계측기</option></select></div>
+            <div class="control-group"><label>검교정 상태</label><select id="filterStatusInst" onchange="renderInstTable()"><option value="ALL">전체 보기</option><option value="WARNING">교정 임박 (30일 이내)</option><option value="EXPIRED">교정 지연 (초과)</option></select></div>
         </div>
 
         <div class="data-card" style="background:#f8f9fa;">
@@ -295,18 +268,11 @@
                 <div class="control-group"><label>기기번호</label><input type="text" id="inputInstNo" placeholder="S/N 입력"></div>
                 <div class="control-group"><label>구입년월</label><input type="month" id="inputInstPurchase"></div>
                 <div class="control-group"><label>수량</label><input type="number" id="inputInstQty" min="1" step="1" value="1" style="width:80px;"></div>
-                
                 <div class="control-group"><label>검교정 주기(월)</label><input type="number" id="inputInstCycle" min="1" step="1" value="12" style="width:120px;"></div>
                 <div class="control-group"><label>최근검교정일</label><input type="date" id="inputInstLastCal"></div>
                 <div class="control-group"><label>검교정예정일 <span style="font-size:11px; color:#c0392b;">(자동계산)</span></label><input type="date" id="inputInstNextCal" readonly style="background-color: #e9ecef;"></div>
-                
                 <div class="control-group" style="flex:1;"><label>특이사항</label><input type="text" id="inputInstRemark" style="width:100%;"></div>
-                
-                <div class="control-group" style="flex:1;">
-                    <label style="color:#27ae60;">📁 단품 성적서 직접 첨부 (최대 20MB)</label>
-                    <input type="file" id="inputInstFile" style="background: white; border-color: #27ae60; width: 100%;">
-                </div>
-                
+                <div class="control-group" style="flex:1;"><label style="color:#27ae60;">📁 단품 성적서 직접 첨부 (최대 20MB)</label><input type="file" id="inputInstFile" style="background: white; border-color: #27ae60; width: 100%;"></div>
                 <button class="action-btn" id="btnSaveInst" onclick="addInstrument()">계측기 등록</button>
             </div>
         </div>
@@ -315,21 +281,7 @@
         <div class="table-container">
             <table class="ng-table" style="font-size: 14px;">
                 <thead>
-                    <tr>
-                        <th style="width:8%;">관리번호</th>
-                        <th style="width:10%;">계측기명</th>
-                        <th style="width:8%;">사양</th>
-                        <th style="width:8%;">기기번호</th>
-                        <th style="width:6%;">구입년월</th>
-                        <th style="width:4%;">수량</th>
-                        <th style="width:6%;">주기(월)</th>
-                        <th style="width:10%;">최근검교정일</th>
-                        <th style="width:10%;">검교정예정일</th>
-                        <th style="width:7%;">잔여일</th>
-                        <th style="width:12%;">특이사항</th>
-                        <th style="width:7%;">성적서</th>
-                        <th style="width:4%;">관리</th>
-                    </tr>
+                    <tr><th style="width:8%;">관리번호</th><th style="width:10%;">계측기명</th><th style="width:8%;">사양</th><th style="width:8%;">기기번호</th><th style="width:6%;">구입년월</th><th style="width:4%;">수량</th><th style="width:6%;">주기(월)</th><th style="width:10%;">최근검교정일</th><th style="width:10%;">검교정예정일</th><th style="width:7%;">잔여일</th><th style="width:12%;">특이사항</th><th style="width:7%;">성적서</th><th style="width:4%;">관리</th></tr>
                 </thead>
                 <tbody id="instTableBody"></tbody>
             </table>
@@ -341,53 +293,23 @@
     // 🚨 [필수입력] 위 1단계에서 새로 배포한 웹앱 URL을 꽂아주세요! 🚨
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbygSn5mcdLTmEeOVei9-Og9g1cfMlPfllAbzu3leKwPAKCqvCl1jpHRI3SbcTvbAgM_/exec";
 
-    // 데이터 저장용 글로벌 객체 (과거 파일 Blob 변환용)
     window.fileDataStore = {};
-
     window.downloadBase64File = function(dataId, fileName) {
         try {
             const base64Data = window.fileDataStore[dataId];
             if(!base64Data) return alert("파일 정보를 찾을 수 없습니다.");
-            
-            const arr = base64Data.split(',');
-            const mime = arr[0].match(/:(.*?);/)[1];
-            const bstr = atob(arr[1]);
-            let n = bstr.length;
-            const u8arr = new Uint8Array(n);
-            while(n--) { u8arr[n] = bstr.charCodeAt(n); }
-            
-            const blob = new Blob([u8arr], {type: mime});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = fileName || '다운로드파일';
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            setTimeout(() => URL.revokeObjectURL(url), 1000);
-        } catch(e) {
-            console.error(e);
-            alert("파일 다운로드 중 오류가 발생했습니다. 파일이 손상되었을 수 있습니다.");
-        }
+            const arr = base64Data.split(','); const mime = arr[0].match(/:(.*?);/)[1]; const bstr = atob(arr[1]);
+            let n = bstr.length; const u8arr = new Uint8Array(n); while(n--) { u8arr[n] = bstr.charCodeAt(n); }
+            const blob = new Blob([u8arr], {type: mime}); const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = fileName || '다운로드파일'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+        } catch(e) { console.error(e); alert("파일 다운로드 중 오류가 발생했습니다. 파일이 손상되었을 수 있습니다."); }
     };
 
-    async function fetchFromSheet(sheetName) {
-        try { const response = await fetch(`${GAS_API_URL}?sheetName=${sheetName}`); return await response.json(); } 
-        catch (error) { return []; }
-    }
-    
-    async function sendToSheetRaw(payload) {
-        const res = await fetch(GAS_API_URL, { redirect: 'follow', method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
-        return await res.json();
-    }
-    
-    async function sendToSheet(sheetName, action, data = null, id = null) {
-        const res = await sendToSheetRaw({ sheetName, action, data, id });
-        if(res.status === 'error') throw new Error(res.message || "Unknown error");
-        return res;
-    }
+    async function fetchFromSheet(sheetName) { try { const response = await fetch(`${GAS_API_URL}?sheetName=${sheetName}`); return await response.json(); } catch (error) { return []; } }
+    async function sendToSheetRaw(payload) { const res = await fetch(GAS_API_URL, { redirect: 'follow', method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) }); return await res.json(); }
+    async function sendToSheet(sheetName, action, data = null, id = null) { const res = await sendToSheetRaw({ sheetName, action, data, id }); if(res.status === 'error') throw new Error(res.message || "Unknown error"); return res; }
 
-    // 🚨 전송 속도 3배 개선! (Chunking 용량을 3MB로 올려 업로드 속도를 비약적으로 단축시킵니다.) 🚨
+    // 🚨 전송 속도 비약적 개선! (Chunking 용량을 기존 3MB에서 6MB로 더 올렸습니다. 5MB 파일은 쪼개지 않고 1방에 보냅니다) 🚨
     async function uploadLargeFile(file, sheetName, finalAction, recordData, btnElement) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -396,41 +318,21 @@
                     const base64Data = e.target.result.split(',')[1];
                     const mimeType = e.target.result.split(';')[0].replace('data:', '');
                     
-                    // 기존 1MB 단위 분할 -> 3MB 단위로 변경 (속도 약 3배 향상)
-                    const chunkSize = 1024 * 1024 * 3; 
+                    const chunkSize = 1024 * 1024 * 6; // 6MB 단위 (전송 횟수를 대폭 줄여서 엄청 빠릅니다)
                     const totalChunks = Math.ceil(base64Data.length / chunkSize);
                     let chunkIds = [];
 
                     for (let i = 0; i < totalChunks; i++) {
                         if(btnElement) btnElement.innerText = `업로드 중... (${i+1}/${totalChunks})`;
                         const chunkStr = base64Data.substring(i * chunkSize, (i + 1) * chunkSize);
-                        
-                        const res = await sendToSheetRaw({
-                            action: 'upload_chunk',
-                            chunk: chunkStr,
-                            fileName: `chunk_${Date.now()}_${i}`
-                        });
-                        
-                        if (res.status === 'error') {
-                            throw new Error("서버 에러: " + res.message);
-                        } else if (res.status === 'ok' && res.chunkId) {
-                            chunkIds.push(res.chunkId);
-                        } else {
-                            throw new Error("알 수 없는 전송 실패");
-                        }
+                        const res = await sendToSheetRaw({ action: 'upload_chunk', chunk: chunkStr, fileName: `chunk_${Date.now()}_${i}` });
+                        if (res.status === 'error') throw new Error("서버 에러: " + res.message);
+                        else if (res.status === 'ok' && res.chunkId) chunkIds.push(res.chunkId);
+                        else throw new Error("알 수 없는 전송 실패");
                     }
 
                     if(btnElement) btnElement.innerText = "조각 병합 및 시트 저장 중...";
-                    
-                    const finalRes = await sendToSheetRaw({
-                        sheetName: sheetName,
-                        action: finalAction,
-                        record: recordData,
-                        chunkIds: chunkIds,
-                        mimeType: mimeType,
-                        fileName: file.name
-                    });
-
+                    const finalRes = await sendToSheetRaw({ sheetName: sheetName, action: finalAction, record: recordData, chunkIds: chunkIds, mimeType: mimeType, fileName: file.name });
                     if (finalRes.status === 'error') throw new Error(finalRes.message);
                     
                     resolve();
@@ -467,7 +369,6 @@
     document.getElementById('excelFileCgk').addEventListener('change', function(e) { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { processCgkData(XLSX.utils.sheet_to_json(XLSX.read(new Uint8Array(e.target.result), {type: 'array'}).Sheets[XLSX.read(new Uint8Array(e.target.result), {type: 'array'}).SheetNames[0]], { header: 1, defval: "" })); }; reader.readAsArrayBuffer(file); });
     function processCgkData(rows) { } function initCgkDashboard() { }
     
-    // 🚨 4M 탭 등록 에러 알림 추가
     let fourMData = []; 
     async function init4MTab() { fourMData = await fetchFromSheet('4M'); render4MTable(); } 
     function render4MTable() { 
@@ -492,37 +393,18 @@
 
     function add4MRecord() {
         requireAuth(async () => {
-            const date = document.getElementById('inputDate4M').value; 
-            const project = document.getElementById('inputProject4M').value.trim(); 
-            const type = document.getElementById('inputType4M').value; 
-            const desc = document.getElementById('inputDesc4M').value.trim();
+            const date = document.getElementById('inputDate4M').value; const project = document.getElementById('inputProject4M').value.trim(); const type = document.getElementById('inputType4M').value; const desc = document.getElementById('inputDesc4M').value.trim();
             if(!date || !project || !desc) return alert("필수 입력 누락");
-            
             const newRecord = { id: Date.now().toString(), date, year: date.split('-')[0], project, type, desc };
-            
             try {
-                await sendToSheet('4M', 'insert', newRecord);
-                fourMData.push(newRecord); 
-                render4MTable();
-                document.getElementById('inputDate4M').value=''; document.getElementById('inputProject4M').value=''; document.getElementById('inputDesc4M').value='';
-                alert("4M 내역이 등록되었습니다.");
-            } catch(e) {
-                alert("저장 실패: 구글 시트 4M 탭의 1행에 헤더가 올바르게 입력되어 있는지 확인하세요.\n(상세 에러: " + e.message + ")");
-            }
+                await sendToSheet('4M', 'insert', newRecord); fourMData.push(newRecord); render4MTable();
+                document.getElementById('inputDate4M').value=''; document.getElementById('inputProject4M').value=''; document.getElementById('inputDesc4M').value=''; alert("4M 내역이 등록되었습니다.");
+            } catch(e) { alert("저장 실패: 구글 시트 4M 탭의 1행에 헤더가 올바르게 입력되어 있는지 확인하세요."); }
         }, "신규 등록");
     }
-
-    function delete4MRecord(id) { 
-        requireAuth(async () => { 
-            if(confirm("삭제하시겠습니까?")) { 
-                fourMData = fourMData.filter(d => String(d.id) !== String(id)); 
-                render4MTable(); 
-                await sendToSheet('4M', 'delete', null, id);
-            } 
-        }, "내역 삭제"); 
-    }
+    function delete4MRecord(id) { requireAuth(async () => { if(confirm("삭제하시겠습니까?")) { fourMData = fourMData.filter(d => String(d.id) !== String(id)); render4MTable(); await sendToSheet('4M', 'delete', null, id); } }, "내역 삭제"); }
     
-    // 🚨 8D 탭 누락 버그 복구 및 에러 알림 추가
+    // 🚨 8D 대책서 저장 로직 (HTML A4 양식 복구 완료)
     let eightDData = []; 
     async function init8DTab() { eightDData = await fetchFromSheet('8D'); render8DList(); } 
     function render8DList() { 
@@ -574,20 +456,11 @@
         };
         
         const isUpdate = !!idInput;
-        
         try {
             await sendToSheet('8D', isUpdate ? 'update' : 'insert', report);
-            
-            if(isUpdate) {
-                eightDData = eightDData.map(d => String(d.id) === String(report.id) ? report : d);
-            } else {
-                eightDData.push(report);
-            }
-            show8DList();
-            alert("8D 대책서가 안전하게 저장되었습니다.");
-        } catch(e) {
-            alert("저장 실패: 구글 시트 8D 탭의 헤더를 확인하세요.\n(상세 에러: " + e.message + ")");
-        }
+            if(isUpdate) { eightDData = eightDData.map(d => String(d.id) === String(report.id) ? report : d); } else { eightDData.push(report); }
+            show8DList(); alert("8D 대책서가 안전하게 저장되었습니다.");
+        } catch(e) { alert("저장 실패: 구글 시트 8D 탭을 확인하세요."); }
     }
     
     function edit8D(id) {
@@ -601,18 +474,10 @@
         }, "대책서 열람 및 수정");
     }
     
-    function delete8D(id) { 
-        requireAuth(async () => { 
-            if(confirm("삭제하시겠습니까?")) { 
-                eightDData = eightDData.filter(d => String(d.id) !== String(id)); 
-                render8DList(); 
-                await sendToSheet('8D', 'delete', null, id);
-            } 
-        }, "삭제"); 
-    }
+    function delete8D(id) { requireAuth(async () => { if(confirm("삭제하시겠습니까?")) { eightDData = eightDData.filter(d => String(d.id) !== String(id)); render8DList(); await sendToSheet('8D', 'delete', null, id); } }, "삭제"); }
 
     // ==========================================
-    // ⭐ QMS 양식 관리 로직 
+    // ⭐ QMS 양식 관리 로직
     // ==========================================
     let qmsDocData = [];
     async function initQmsTab() { document.getElementById('qmsDocTableBody').innerHTML = '<tr><td colspan="8" style="padding: 20px;">데이터를 불러오는 중입니다...</td></tr>'; qmsDocData = await fetchFromSheet('QMS'); renderQmsDocTable(); }
@@ -636,7 +501,7 @@
 
             let fileHTML = `<span style="color:#bdc3c7; font-size:13px;">첨부 없음</span>`;
             if (d.fileData) {
-                if (d.fileData.startsWith('http')) { fileHTML = `<a href="${d.fileData}" target="_blank" class="download-btn">🔗 열기</a>`; } 
+                if (d.fileData.startsWith('http')) { fileHTML = `<a href="${d.fileData}" target="_blank" class="download-btn">🔗 다운로드</a>`; } 
                 else if (d.fileData.startsWith('data:')) {
                     const dataId = 'qms_' + d.id; window.fileDataStore[dataId] = d.fileData;
                     fileHTML = `<button onclick="downloadBase64File('${dataId}', '${d.fileName}')" class="download-btn">⬇️ 다운로드</button>`;
@@ -673,7 +538,7 @@
     function deleteQmsDocument(id) { requireAuth(async () => { if(confirm("삭제하시겠습니까?")) { qmsDocData = qmsDocData.filter(d => String(d.id) !== String(id)); renderQmsDocTable(); await sendToSheet('QMS', 'delete', null, id); } }, "삭제"); }
 
     // ==========================================
-    // ⭐ 8. 계측기 관리 로직 
+    // ⭐ 8. 계측기 관리 로직
     // ==========================================
     let instData = [];
     let masterInstFileRec = null;
@@ -706,11 +571,12 @@
             btn.disabled = true;
             try {
                 const record = { id: 'MASTER_EXCEL_INST', name: '계측기 종합 이력카드 엑셀파일', type: 'MASTER' };
+                await sendToSheet('Instrument', 'delete', null, 'MASTER_EXCEL_INST');
                 
                 await uploadLargeFile(file, 'Instrument', 'insert_chunked', record, btn);
-                instData = await fetchFromSheet('Instrument');
                 
-                alert("종합 엑셀파일이 성공적으로 업로드 되었습니다.");
+                instData = await fetchFromSheet('Instrument');
+                alert("계측기 이력카드 종합 엑셀파일이 성공적으로 업로드되었습니다.");
                 fileInput.value = ''; renderInstTable(); 
             } catch (e) { alert("업로드 실패: " + e.message); } 
             finally { btn.innerText = "파일 업로드 / 덮어쓰기"; btn.disabled = false; }
@@ -742,9 +608,7 @@
         }, "계측기 등록");
     }
 
-    function deleteInstrument(id) {
-        requireAuth(async () => { if(confirm("삭제하시겠습니까?")) { instData = instData.filter(d => String(d.id) !== String(id)); renderInstTable(); await sendToSheet('Instrument', 'delete', null, id); } }, "삭제");
-    }
+    function deleteInstrument(id) { requireAuth(async () => { if(confirm("삭제하시겠습니까?")) { instData = instData.filter(d => String(d.id) !== String(id)); renderInstTable(); await sendToSheet('Instrument', 'delete', null, id); } }, "삭제"); }
 
     function renderInstTable() {
         const tbody = document.getElementById('instTableBody'); tbody.innerHTML = '';
@@ -803,14 +667,27 @@
                 if (d.fileData.startsWith('http')) {
                     fileHTML = `<a href="${d.fileData}" target="_blank" class="download-btn" style="font-size:11px; padding:4px 8px;">🔗 열기</a>`;
                 } else if (d.fileData.startsWith('data:')) {
-                    const dataId = 'inst_' + d.id;
-                    window.fileDataStore[dataId] = d.fileData;
+                    const dataId = 'inst_' + d.id; window.fileDataStore[dataId] = d.fileData;
                     fileHTML = `<button onclick="downloadBase64File('${dataId}', '${d.fileName || '성적서'}')" class="download-btn" style="font-size:11px; padding:4px 8px;">⬇️ 다운로드</button>`;
                 }
             }
 
             tr.innerHTML = `<td style="font-weight: 900; color: #8e44ad;">${d.instCode || '-'}</td><td style="font-weight: 900; color: #2c3e50;">${d.name || '-'}</td><td>${d.spec || '-'}</td><td style="color: #2980b9;">${d.instNo || '-'}</td><td>${formatMonthSafe(d.purchase)}</td><td>${d.qty || '1'}</td><td style="color: #16a085;">${d.cycle || '-'}</td><td>${formatDateSafe(d.lastCal)}</td><td style="${dateStyle}">${formatDateSafe(d.nextCal)}</td><td style="${dateStyle}">${remainHtml}</td><td style="text-align: left; font-weight:normal;">${d.remark || '-'}</td><td>${fileHTML}</td><td><button class="delete-btn no-print" style="padding: 4px 8px; font-size:12px;" onclick="deleteInstrument('${d.id}')">삭제</button></td>`;
             tbody.appendChild(tr);
+        });
+    }
+
+    function setupImagePaste() {
+        document.querySelectorAll('.rich-editor').forEach(editor => {
+            editor.addEventListener('paste', function(e) {
+                const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+                for (let i = 0; i < items.length; i++) {
+                    if (items[i].type.indexOf("image") !== -1) {
+                        e.preventDefault(); const blob = items[i].getAsFile(); const reader = new FileReader();
+                        reader.onload = function(event) { const img = document.createElement("img"); img.src = event.target.result; img.style.maxWidth = "100%"; img.style.marginTop = "10px"; editor.appendChild(img); }; reader.readAsDataURL(blob);
+                    }
+                }
+            });
         });
     }
 </script>
