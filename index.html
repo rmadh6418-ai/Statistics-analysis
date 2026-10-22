@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- 스마트폰 앱 설치(PWA) 강제 인식 코드 -->
     <link rel="manifest" href='data:application/manifest+json;utf-8,{"name":"제조 품질 통합 대시보드","short_name":"품질 대시보드","start_url":".","display":"standalone","background_color":"#f8f9fa","theme_color":"#34495e","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/2621/2621040.png","sizes":"512x512","type":"image/png"}]}'>
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -144,9 +145,10 @@
         <button class="tab-btn active" onclick="openTab('cgkTab', this)">MSA Cg/Cgk</button>
         <button class="tab-btn" onclick="openTab('cpkTab', this)">CPK / PPK</button>
         <button class="tab-btn" onclick="openTab('grrTab', this)">Gage R&R 분석</button>
-        <button class="tab-btn" onclick="openTab('supplierTab', this)">협력사 검사</button>
+        <!-- 🚨 탭 이름 변경 적용: 협력사 수입검사 / 고객사 8D Report -->
+        <button class="tab-btn" onclick="openTab('supplierTab', this)">협력사 수입검사</button>
         <button class="tab-btn" onclick="openTab('fourMTab', this)">4M 변경관리</button>
-        <button class="tab-btn" onclick="openTab('customerTab', this)">고객사 8D</button>
+        <button class="tab-btn" onclick="openTab('customerTab', this)">고객사 8D Report</button>
         <button class="tab-btn" onclick="openTab('qmsTab', this)">QMS/문서</button>
         <button class="tab-btn" onclick="openTab('instTab', this)">계측기 관리</button>
         <button class="action-btn no-print" onclick="window.print()" style="margin-left: auto; margin-bottom: -3px; background-color: #8e44ad; border-radius: 8px; font-size: 15px;">🖨️ 화면 인쇄</button>
@@ -250,7 +252,7 @@
         </div>
     </div>
 
-    <!-- 4. 협력사 탭 -->
+    <!-- 4. 협력사 수입검사 탭 -->
     <div id="supplierTab" class="tab-content">
         <div class="controls">
             <div class="control-group"><label>협력사 수입검사 List 업로드</label><input type="file" id="excelFileSupplier" accept=".xlsx, .xls"></div>
@@ -311,8 +313,9 @@
 
         <div id="view8DList">
             <div class="table-container">
+                <!-- 🚨 리스트 테이블 헤더에 'NCR 접수일자' 추가 완료 -->
                 <table class="ng-table">
-                    <thead><tr><th style="width:12%;">발행 일자</th><th style="width:10%;">연도</th><th style="width:18%;">프로젝트명</th><th style="width:15%;">고객사</th><th style="width:25%;">불량 현상</th><th style="width:20%;">관리</th></tr></thead>
+                    <thead><tr><th style="width:12%;">NCR 접수일자</th><th style="width:12%;">발행 일자</th><th style="width:8%;">연도</th><th style="width:15%;">프로젝트명</th><th style="width:15%;">고객사</th><th style="width:23%;">불량 현상</th><th style="width:15%;">관리</th></tr></thead>
                     <tbody id="tableBody8D"></tbody>
                 </table>
             </div>
@@ -326,10 +329,20 @@
                 <div class="a4-paper">
                     <h2 class="print-title" style="text-align: center; margin-bottom: 25px; font-size: 28px; letter-spacing: 2px;">8D Report (시정 및 예방 조치서)</h2>
                     <input type="hidden" id="8d_id">
+                    <!-- 🚨 A4 폼 안에 'NCR 접수일자' 필드 레이아웃 추가 완료 -->
                     <table class="report-table">
-                        <tr><th style="width:18%">발행 일자</th><td style="width:32%"><input type="date" id="8d_date" class="borderless-input"></td><th style="width:18%">프로젝트명</th><td style="width:32%"><input type="text" id="8d_project" class="borderless-input" placeholder="입력하세요"></td></tr>
-                        <tr><th>고객사</th><td><input type="text" id="8d_customer" class="borderless-input" placeholder="고객사명"></td><th>부품/제품명(도번)</th><td><input type="text" id="8d_part" class="borderless-input" placeholder="부품 정보"></td></tr>
-                        <tr><th>불량 현상 (요약)</th><td colspan="3"><input type="text" id="8d_defect" class="borderless-input" placeholder="불량 내용 요약" style="font-weight: bold; color: #c0392b;"></td></tr>
+                        <tr>
+                            <th style="width:18%">NCR 접수일자</th><td style="width:32%"><input type="date" id="8d_ncr_date" class="borderless-input"></td>
+                            <th style="width:18%">발행 일자</th><td style="width:32%"><input type="date" id="8d_date" class="borderless-input"></td>
+                        </tr>
+                        <tr>
+                            <th>프로젝트명</th><td><input type="text" id="8d_project" class="borderless-input" placeholder="입력하세요"></td>
+                            <th>고객사</th><td><input type="text" id="8d_customer" class="borderless-input" placeholder="고객사명"></td>
+                        </tr>
+                        <tr>
+                            <th>부품/제품명(도번)</th><td><input type="text" id="8d_part" class="borderless-input" placeholder="부품 정보"></td>
+                            <th>불량 현상 (요약)</th><td><input type="text" id="8d_defect" class="borderless-input" placeholder="불량 내용 요약" style="font-weight: bold; color: #c0392b;"></td>
+                        </tr>
                         <tr><th>D1. 팀 구성</th><td colspan="3"><div id="8d_d1" class="borderless-input rich-editor" contenteditable="true"></div></td></tr>
                         <tr><th>D2. 문제 설명</th><td colspan="3"><div id="8d_d2" class="borderless-input rich-editor" contenteditable="true"></div></td></tr>
                         <tr><th>D3. 임시 조치</th><td colspan="3"><div id="8d_d3" class="borderless-input rich-editor" contenteditable="true"></div></td></tr>
@@ -361,10 +374,7 @@
                 <div class="control-group"><label>Rev.</label><input type="number" id="inputDocRev" min="0" step="1" value="0" style="width:70px;"></div>
                 <div class="control-group"><label>시행 일자</label><input type="date" id="inputDocDate"></div>
                 <div class="control-group" style="flex:1;"><label>제/개정 사유 및 설명</label><input type="text" id="inputDocReason" style="width:100%;"></div>
-                
-                <!-- 🚨 일반 탭은 직접 파일 텍스트 임베딩으로 처리되도록 원래대로 되돌렸습니다. -->
                 <div class="control-group" style="flex:1;"><label style="color:#27ae60;">📁 파일 첨부</label><input type="file" id="inputDocFile" style="background: white; border-color: #27ae60; width: 100%;"></div>
-                
                 <button class="action-btn" id="btnSaveQms" onclick="addQmsDocument()">문서/양식 등록</button>
             </div>
         </div>
@@ -383,8 +393,7 @@
             <div class="card-header" style="color:#27ae60; font-size: 1.1em; border-bottom: 2px solid #2ecc71; padding-bottom: 8px;">📁 계측기 이력카드 종합 엑셀파일 관리</div>
             <div style="display:flex; flex-wrap:wrap; gap:15px; align-items:flex-end;">
                 <div class="control-group" style="flex:1; min-width: 300px;">
-                    <!-- 🚨 이 녀석만 구글 드라이브 분할 업로드 적용 -->
-                    <label>종합 엑셀파일 1개 직접 첨부 (최대 20MB 완벽 지원 - 분할 처리)</label>
+                    <label>종합 엑셀파일 1개 직접 첨부 (최대 20MB 완벽 지원)</label>
                     <input type="file" id="masterInstFile" accept=".xlsx, .xls" style="background: white; border-color: #27ae60; width: 100%;">
                 </div>
                 <button class="action-btn" id="btnSaveMasterInst" style="background-color: #27ae60; height: 43px;" onclick="uploadMasterInstFile()">파일 업로드 / 덮어쓰기</button>
@@ -412,10 +421,7 @@
                 <div class="control-group"><label>최근검교정일</label><input type="date" id="inputInstLastCal"></div>
                 <div class="control-group"><label>검교정예정일 <span style="font-size:11px; color:#c0392b;">(자동계산)</span></label><input type="date" id="inputInstNextCal" readonly style="background-color: #e9ecef;"></div>
                 <div class="control-group" style="flex:1;"><label>특이사항</label><input type="text" id="inputInstRemark" style="width:100%;"></div>
-                
-                <!-- 🚨 일반 탭은 직접 파일 텍스트 임베딩으로 처리되도록 원래대로 되돌렸습니다. -->
-                <div class="control-group" style="flex:1;"><label style="color:#27ae60;">📁 단품 성적서 직접 첨부</label><input type="file" id="inputInstFile" style="background: white; border-color: #27ae60; width: 100%;"></div>
-                
+                <div class="control-group" style="flex:1;"><label style="color:#27ae60;">📁 단품 성적서 직접 첨부 (최대 20MB)</label><input type="file" id="inputInstFile" style="background: white; border-color: #27ae60; width: 100%;"></div>
                 <button class="action-btn" id="btnSaveInst" onclick="addInstrument()">계측기 등록</button>
             </div>
         </div>
@@ -433,8 +439,8 @@
 </div>
 
 <script>
-    // 🚨 [필수입력] 웹앱 URL을 입력해 주세요! 🚨
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxAmM1xlV1KtR2H3joZv2ZuiONLMwGIaGvZ1wNOXVEZFGykxkn1gbBTEirHsJiaQ4cz/exec";
+    // 🚨 [필수입력] 새로 발급받은 웹앱 URL을 입력해 주세요! 🚨
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzBZ7fBhdxzTNITs4hmVxvzcDkJ7S0tUlPxRmMnEKBiAlYu29GluiBCHC_WEnP__AGd/exec";
 
     window.fileDataStore = {};
     window.downloadBase64File = function(dataId, fileName) {
@@ -449,10 +455,12 @@
     };
 
     async function fetchFromSheet(sheetName) { try { const response = await fetch(`${GAS_API_URL}?sheetName=${sheetName}`); return await response.json(); } catch (error) { return []; } }
-    async function sendToSheetRaw(payload) { const res = await fetch(GAS_API_URL, { redirect: 'follow', method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) }); return await res.json(); }
+    async function sendToSheetRaw(payload) { 
+        try { const res = await fetch(GAS_API_URL, { redirect: 'follow', method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) }); return await res.json(); }
+        catch (err) { alert(`통신 에러가 발생했습니다.\n(상세: ${err.message})`); throw err; }
+    }
     async function sendToSheet(sheetName, action, data = null, id = null) { const res = await sendToSheetRaw({ sheetName, action, data, id }); if(res.status === 'error') throw new Error(res.message || "Unknown error"); return res; }
 
-    // 🚨 종합 엑셀파일용 분할 업로드
     async function uploadLargeFile(file, sheetName, finalAction, recordData, btnElement) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -726,7 +734,7 @@
     async function generateAIReportCpk() {}
 
     // ==========================================
-    // ⭐ 3. Gage R&R 로직
+    // ⭐ 3. Gage R&R 로직 
     // ==========================================
     let grrChartBarInst = null; let grrChartLineInst = null; let grrRawDataCache = null; 
     
@@ -940,7 +948,7 @@
     async function generateAIReportSupplier() {}
 
     // ==========================================
-    // 5. 4M 변경 관리 탭 
+    // 5. 4M 변경 관리 탭 (날짜 형식 수정 완료)
     // ==========================================
     let fourMData = []; 
     async function init4MTab() { fourMData = await fetchFromSheet('4M'); render4MTable(); } 
@@ -959,7 +967,8 @@
         filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(d => {
             let tr = document.createElement('tr'); let color = '#2c3e50';
             if(d.type && d.type.includes('Man')) color = '#2980b9'; else if(d.type && d.type.includes('Machine')) color = '#e67e22'; else if(d.type && d.type.includes('Material')) color = '#8e44ad'; else if(d.type && d.type.includes('Method')) color = '#27ae60';
-            tr.innerHTML = `<td>${d.date}</td><td>${d.year}</td><td>${d.project}</td><td style="color: ${color}; font-weight: 900;">${d.type}</td><td style="text-align: left;">${d.desc}</td><td><button class="delete-btn no-print" onclick="delete4MRecord('${d.id}')">삭제</button></td>`;
+            // 🚨 날짜 포맷 깔끔하게 변경 완료
+            tr.innerHTML = `<td>${formatDateSafe(d.date)}</td><td>${d.year}</td><td>${d.project}</td><td style="color: ${color}; font-weight: 900;">${d.type}</td><td style="text-align: left;">${d.desc}</td><td><button class="delete-btn no-print" onclick="delete4MRecord('${d.id}')">삭제</button></td>`;
             tbody.appendChild(tr);
         });
     }
@@ -978,7 +987,7 @@
     function delete4MRecord(id) { requireAuth(async () => { if(confirm("삭제하시겠습니까?")) { fourMData = fourMData.filter(d => String(d.id) !== String(id)); render4MTable(); await sendToSheet('4M', 'delete', null, id); } }, "내역 삭제"); }
     
     // ==========================================
-    // 6. 고객사 부적합 현황 (8D 대책서)
+    // 6. 고객사 8D Report (NCR 접수일자 추가 완료)
     // ==========================================
     let eightDData = []; 
     async function init8DTab() { eightDData = await fetchFromSheet('8D'); render8DList(); } 
@@ -993,10 +1002,11 @@
         let filtered = eightDData.filter(d => (filterYear === 'ALL' || d.year === filterYear) && (filterProject === 'ALL' || d.project === filterProject));
 
         const tbody = document.getElementById('tableBody8D'); tbody.innerHTML = '';
-        if(filtered.length === 0) return tbody.innerHTML = `<tr><td colspan="6" style="padding: 20px;">대책서가 없습니다.</td></tr>`;
+        if(filtered.length === 0) return tbody.innerHTML = `<tr><td colspan="7" style="padding: 20px;">대책서가 없습니다.</td></tr>`;
         filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(d => {
             let tr = document.createElement('tr');
-            tr.innerHTML = `<td>${d.date}</td><td>${d.year}</td><td style="color: #2980b9;">${d.project}</td><td>${d.customer}</td><td style="color: #c0392b; font-weight: 900;">${d.defect}</td>
+            // 🚨 테이블 리스트에 ncrDate 추가 및 날짜 포맷 깔끔하게 변경 완료
+            tr.innerHTML = `<td>${formatDateSafe(d.ncrDate)}</td><td>${formatDateSafe(d.date)}</td><td>${d.year}</td><td style="color: #2980b9;">${d.project}</td><td>${d.customer}</td><td style="color: #c0392b; font-weight: 900;">${d.defect}</td>
                 <td><button class="action-btn no-print" style="padding: 6px 12px; font-size:13px;" onclick="edit8D('${d.id}')">수정</button> <button class="delete-btn no-print" onclick="delete8D('${d.id}')">삭제</button></td>`;
             tbody.appendChild(tr);
         });
@@ -1006,7 +1016,9 @@
     
     function createNew8D() {
         requireAuth(() => {
-            document.getElementById('8d_id').value = ''; document.getElementById('8d_date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('8d_id').value = ''; 
+            document.getElementById('8d_ncr_date').value = new Date().toISOString().split('T')[0]; // 신규 작성시 기본값 오늘
+            document.getElementById('8d_date').value = new Date().toISOString().split('T')[0];
             document.getElementById('8d_project').value = ''; document.getElementById('8d_customer').value = ''; document.getElementById('8d_part').value = ''; document.getElementById('8d_defect').value = '';
             for(let i=1; i<=8; i++) document.getElementById('8d_d'+i).innerHTML = '';
             document.getElementById('view8DList').classList.add('hidden'); document.getElementById('view8DForm').classList.remove('hidden');
@@ -1014,7 +1026,9 @@
     }
 
     async function save8D() {
-        const idInput = document.getElementById('8d_id').value; const date = document.getElementById('8d_date').value; 
+        const idInput = document.getElementById('8d_id').value; 
+        const ncrDate = document.getElementById('8d_ncr_date').value; 
+        const date = document.getElementById('8d_date').value; 
         const project = document.getElementById('8d_project').value.trim(); const customer = document.getElementById('8d_customer').value.trim(); 
         const defect = document.getElementById('8d_defect').value.trim();
         
@@ -1022,7 +1036,7 @@
         
         const report = { 
             id: idInput ? idInput : Date.now().toString(), 
-            date: date, year: date.split('-')[0], project: project, customer: customer, 
+            ncrDate: ncrDate, date: date, year: date.split('-')[0], project: project, customer: customer, 
             part: document.getElementById('8d_part').value, defect: defect, 
             d1: document.getElementById('8d_d1').innerHTML, d2: document.getElementById('8d_d2').innerHTML, 
             d3: document.getElementById('8d_d3').innerHTML, d4: document.getElementById('8d_d4').innerHTML, 
@@ -1041,7 +1055,9 @@
     function edit8D(id) {
         requireAuth(() => {
             const report = eightDData.find(d => String(d.id) === String(id)); if(!report) return;
-            document.getElementById('8d_id').value = report.id; document.getElementById('8d_date').value = report.date; 
+            document.getElementById('8d_id').value = report.id; 
+            document.getElementById('8d_ncr_date').value = (report.ncrDate && formatDateSafe(report.ncrDate) !== '-') ? formatDateSafe(report.ncrDate) : ''; 
+            document.getElementById('8d_date').value = (report.date && formatDateSafe(report.date) !== '-') ? formatDateSafe(report.date) : ''; 
             document.getElementById('8d_project').value = report.project; document.getElementById('8d_customer').value = report.customer; 
             document.getElementById('8d_part').value = report.part; document.getElementById('8d_defect').value = report.defect;
             for(let i=1; i<=8; i++) document.getElementById('8d_d'+i).innerHTML = report['d'+i] || '';
