@@ -56,12 +56,9 @@
         .metric-card.warning { background: #fff3bf; border: 1px solid #fcc419; }
         .metric-card h3 { margin: 0 0 10px 0; font-size: 14px; color: #495057; font-weight: bold; }
         .metric-card p { margin: 0; font-size: 26px; font-weight: 900; color: #212529; }
-        
-        /* 🚨 CPK 그래프 이탈 문제 방지를 위한 CSS 보완 */
         .chart-row { display: flex; gap: 25px; margin-bottom: 25px; flex-wrap: wrap; width: 100%;}
         .chart-box { flex: 1; min-width: 450px; background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; position: relative; box-sizing: border-box; overflow: hidden; }
-        .js-plotly-plot { max-width: 100%; } /* 반응형 그래프 강제 제어 */
-        
+        .js-plotly-plot { max-width: 100%; } 
         .table-container { max-height: 600px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 8px; }
         .ng-table { width: 100%; border-collapse: collapse; font-size: 15px; text-align: center; }
         .ng-table th { background: #343a40; color: white; padding: 12px; position: sticky; top: 0; z-index: 1; font-weight: bold; }
@@ -91,11 +88,22 @@
         .rich-editor:empty:before { content: attr(data-placeholder); color: #999; pointer-events: none; display: block; }
         .rich-editor img { max-width: 100%; height: auto; display: block; margin: 8px 0; border: 1px solid #dee2e6; border-radius: 4px; }
         
+        /* 👇 평상시 화면의 탭 타이틀 서식 */
+        .print-title-text { font-size: 0.75em; color: #555; }
+
+        /* 🚨 인쇄 전용 최적화 CSS 🚨 */
         @media print {
             @page { size: auto; margin: 8mm; }
             body, html { background: white !important; padding: 0 !important; margin: 0 !important; color: #000 !important; zoom: 0.65; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             #loginOverlay, .tab-menu, .controls, .ai-controls, button, .action-btn, .delete-btn { display: none !important; }
-            #main-dashboard-title { display: block !important; text-align: center; margin-bottom: 20px; font-size: 24px; }
+            
+            /* 👇 불필요한 공통 제목 숨기기 */
+            .no-print { display: none !important; }
+            
+            /* 👇 선택된 탭 이름만 엄청 크게, 정중앙에 출력되도록 설정 */
+            #main-dashboard-title { display: block !important; text-align: center; margin-bottom: 30px !important; border: none !important; padding: 0 !important; }
+            .print-title-text { font-size: 46px !important; color: #000 !important; display: block !important; text-align: center; font-weight: 900; padding-bottom: 20px; letter-spacing: 2px; }
+            
             .container { box-shadow: none !important; border: none !important; padding: 0 !important; max-width: none !important; width: 100% !important; margin: 0 !important; background: white !important; }
             .tab-content { display: none !important; }
             .tab-content.active { display: block !important; }
@@ -134,7 +142,10 @@
 </div>
 
 <div class="container">
-    <h2 id="main-dashboard-title" style="margin-top:0; color: #343a40; font-weight: 900;">📊 제조 품질 통합 대시보드 <span style="font-size: 0.75em; color: #555;">- MSA Cg/Cgk 분석</span></h2>
+    <!-- 👇 인쇄 시 탭 이름만 남도록 span 태그 구조 변경 -->
+    <h2 id="main-dashboard-title" style="margin-top:0; color: #343a40; font-weight: 900;">
+        <span class="no-print">📊 제조 품질 통합 대시보드 </span><span class="print-title-text">- MSA Cg/Cgk</span>
+    </h2>
     
     <div class="tab-menu">
         <button class="tab-btn active" onclick="openTab('cgkTab', this)">MSA Cg/Cgk</button>
@@ -165,7 +176,7 @@
         <div id="detailDashboardCgk"></div>
     </div>
 
-    <!-- 🚨 2. CPK 탭 (그래프 이탈 방지 조치 완벽 적용) -->
+    <!-- 2. CPK 탭 -->
     <div id="cpkTab" class="tab-content">
         <div class="controls">
             <div class="control-group"><label>엑셀 업로드 (.xlsx)</label><input type="file" id="excelFileCpk" accept=".xlsx, .xls"></div>
@@ -191,7 +202,6 @@
                 <div class="chart-box" id="chartHistCpk" style="height: 450px;"></div>
                 <div class="chart-box" id="chartBoxCpk" style="height: 450px;"></div>
             </div>
-            <!-- 👇 이 영역이 밖으로 튀어나가지 않도록 chart-row 안에 묶어주어 완벽 해결 -->
             <div class="chart-row">
                 <div class="chart-box" id="chartTopCpk" style="height: 450px;"></div>
                 <div class="chart-box" id="chartBottomCpk" style="height: 450px;"></div>
@@ -200,7 +210,7 @@
         <div id="allCategoriesViewCpk" class="hidden"><div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px;" id="allChartsGridCpk"></div></div>
     </div>
 
-    <!-- 🚨 3. Gage R&R 탭 (AI 분석 및 판정 가이드 완벽 복구) -->
+    <!-- 3. Gage R&R 탭 -->
     <div id="grrTab" class="tab-content">
         <div class="controls" style="background:#f4fce3; border:1px solid #c0eb75;">
             <div class="control-group"><label>Gage R&R 측정 데이터 (.xlsx)</label><input type="file" id="excelFileGrr" accept=".xlsx, .xls, .csv" /></div>
@@ -209,7 +219,6 @@
             <div class="control-group" style="margin-left:auto; justify-content:center;"><a href="#" onclick="downloadGrrTemplate()" style="color:#2b8a3e; text-decoration:underline; font-size:15px; font-weight:900;">📄 측정 표준 양식 다운로드 (3x10x3)</a></div>
         </div>
         
-        <!-- 👇 AI 컨트롤 영역 추가 -->
         <div class="controls ai-controls" id="aiControlsGroupGrr">
             <div class="control-group" style="flex: 1;">
                 <label style="color: #1565c0;">🔑 Gemini API 키</label>
@@ -227,7 +236,6 @@
             <div class="metric-card" id="card-grr-ndc"><h3>ndc (구분범주수)</h3><p id="txt-grr-ndc">-</p><span class="sub-text">목표: 5 이상</span></div>
         </div>
         
-        <!-- 👇 AI 리포트 출력 영역 추가 -->
         <div id="aiReportAreaGrr" class="ai-report-area hidden">
             <div class="ai-header-bar" onclick="toggleAiReport('aiReportContentGrr', 'iconGrr')">
                 <h3>💡 AI 리포트</h3><span id="iconGrr" class="ai-toggle-icon">▼</span>
@@ -240,7 +248,6 @@
                 <div class="chart-box" style="height: 450px;"><canvas id="grrChartBar"></canvas></div>
                 <div class="chart-box" style="height: 450px;"><canvas id="grrChartLine"></canvas></div>
             </div>
-            <!-- 👇 판정 가이드 원상 복구 완료 -->
             <h3 style="margin-top: 30px; color: #2c3e50; font-size: 20px;">🚨 [판정 가이드]</h3>
             <p style="color: #495057; line-height: 1.6; font-weight: bold; background: white; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6;">
                 1) <b>%Study Var (공정능력 관리용)</b> : 10% 이하 (우수), 10~30% (조건부 수용), 30% 초과 (부적합)<br>
@@ -250,7 +257,7 @@
         </div>
     </div>
 
-    <!-- 🚨 4. 협력사 탭 (어떤 양식이든 다 인식하도록 로직 대폭 개선) -->
+    <!-- 4. 협력사 탭 -->
     <div id="supplierTab" class="tab-content">
         <div class="controls">
             <div class="control-group"><label>협력사 수입검사 List 업로드</label><input type="file" id="excelFileSupplier" accept=".xlsx, .xls"></div>
@@ -426,7 +433,7 @@
 </div>
 
 <script>
-    // 🚨 [필수입력] 웹앱 URL을 입력해 주세요! 🚨
+    // 🚨 [필수입력] 위 1단계에서 새로 배포한 웹앱 URL을 꽂아주세요! 🚨
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbygSn5mcdLTmEeOVei9-Og9g1cfMlPfllAbzu3leKwPAKCqvCl1jpHRI3SbcTvbAgM_/exec";
 
     window.fileDataStore = {};
@@ -452,7 +459,7 @@
                 try {
                     const base64Data = e.target.result.split(',')[1];
                     const mimeType = e.target.result.split(';')[0].replace('data:', '');
-                    const chunkSize = 1024 * 1024 * 6; // 6MB 단위 (속도 비약적 향상)
+                    const chunkSize = 1024 * 1024 * 6; 
                     const totalChunks = Math.ceil(base64Data.length / chunkSize);
                     let chunkIds = [];
 
@@ -489,11 +496,14 @@
 
     window.addEventListener('load', () => { init4MTab(); init8DTab(); initQmsTab(); initInstTab(); setupImagePaste(); });
 
+    // 🚨 탭 전환 함수에 인쇄용 타이틀 적용 로직 완벽 복구
     function openTab(tabName, btnElement) {
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(tabName).classList.add('active'); btnElement.classList.add('active');
-        document.getElementById('main-dashboard-title').innerHTML = `📊 제조 품질 통합 대시보드 <span style="font-size: 0.75em; color: #555;">- ${btnElement.innerText}</span>`;
+        
+        document.getElementById('main-dashboard-title').innerHTML = `<span class="no-print">📊 제조 품질 통합 대시보드 </span><span class="print-title-text">- ${btnElement.innerText}</span>`;
+        
         setTimeout(() => { if(tabName === 'fourMTab') render4MTable(); if(tabName === 'customerTab') render8DList(); if(tabName === 'qmsTab') renderQmsDocTable(); if(tabName === 'instTab') renderInstTable(); }, 50);
     }
 
@@ -568,7 +578,7 @@
     async function generateAIReportCgk() {}
 
     // ==========================================
-    // ⭐ 2. CPK 탭 로직 (반응형 그래프 이탈 문제 완벽 픽스)
+    // ⭐ 2. CPK 탭 로직
     // ==========================================
     let cpkCategories = {}; let cpkRenderTimer = null; 
     const cpkControlConstants = { 2: { d2: 1.128, A2: 1.880, D3: 0, D4: 3.267, E2: 2.660 }, 3: { d2: 1.693, A2: 1.023, D3: 0, D4: 2.574 }, 4: { d2: 2.059, A2: 0.729, D3: 0, D4: 2.282 }, 5: { d2: 2.326, A2: 0.577, D3: 0, D4: 2.114 }, 6: { d2: 2.534, A2: 0.483, D3: 0, D4: 2.004 }, 7: { d2: 2.704, A2: 0.419, D3: 0.076, D4: 1.924 }, 8: { d2: 2.847, A2: 0.373, D3: 0.136, D4: 1.864 }, 9: { d2: 2.970, A2: 0.337, D3: 0.184, D4: 1.816 }, 10: { d2: 3.078, A2: 0.308, D3: 0.223, D4: 1.777 } };
@@ -654,7 +664,6 @@
         cpkRenderTimer = setTimeout(() => { cat === "ALL" ? drawAllCategoriesCpk(LSL, USL) : renderSingleCategoryCpk(cat, chartType, LSL, USL); }, 100); 
     }
 
-    // 🚨 Plotly 그래프가 밖으로 나가지 않도록 반응형 옵션 `{ responsive: true }` 적용 완료
     function renderSingleCategoryCpk(cat, chartType, LSL, USL) { 
         const values = cpkCategories[cat].data; if (values.length < 2) return; 
         let specRange = Math.abs(USL - LSL) || 1; 
@@ -717,7 +726,7 @@
     async function generateAIReportCpk() {}
 
     // ==========================================
-    // ⭐ 3. Gage R&R 로직 (판정 가이드 및 AI 분석 복구 완료)
+    // ⭐ 3. Gage R&R 로직
     // ==========================================
     let grrChartBarInst = null; let grrChartLineInst = null; let grrRawDataCache = null; 
     
@@ -832,7 +841,7 @@
 
 
     // ==========================================
-    // ⭐ 4. 협력사 검사 로직 (제목 행 자동 탐색 및 폭넓은 양식 인식 추가 완료!)
+    // ⭐ 4. 협력사 검사 로직 
     // ==========================================
     let supChartsObj = {}; let allSupplierRawData = [];
     document.getElementById('excelFileSupplier').addEventListener('change', function(e) {
@@ -841,7 +850,6 @@
             const data = new Uint8Array(e.target.result); const workbook = XLSX.read(data, {type: 'array'});
             const worksheet = workbook.Sheets[workbook.SheetNames[0]]; 
             
-            // 🚨 해결: 양식의 제목 행(Header row)이 무조건 1행이 아니어도 자동으로 찾아내는 로직
             const rawRows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
             let headerIdx = 0;
             for(let i=0; i < Math.min(rawRows.length, 15); i++){
@@ -861,7 +869,6 @@
         rawData.forEach(row => {
             const getVal = (keys) => { for(let key of keys) { let found = Object.keys(row).find(k => k.replace(/\s/g,'').includes(key)); if(found) return row[found]; } return ""; };
             
-            // 🚨 해결: 다양한 회사 양식의 단어들을 폭넓게 대응하여 인식률 극대화
             let supplier = getVal(['협력사', '업체', '업체명']);
             let project = getVal(['Project', '프로젝트', '품명', '기종']);
             let result = getVal(['검사결과', '판정', '합격여부', '결과', '합불']);
@@ -869,7 +876,7 @@
             let improved = getVal(['완료유/무', '개선완료', '조치여부', '완료여부', '조치']);
             
             if(!supplier && !result) return; 
-            if(supplier && !result) result = "합격"; // 결과값이 빈칸이어도 회사명이 있으면 기본 합격으로 간주
+            if(supplier && !result) result = "합격"; 
 
             let year = "기타", month = "기타", formattedDate = dateStr;
             if(dateStr) {
