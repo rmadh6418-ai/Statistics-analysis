@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>제조 품질 통합 대시보드 (Cgk & CPK & Gage R&R & 수입검사 & 4M & 8D & QMS)</title>
+    <title>제조 품질 통합 대시보드 (Cgk & CPK & Gage R&R & 수입검사 & 4M & 8D & QMS & 계측기)</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
@@ -155,6 +155,8 @@
         <button class="tab-btn" onclick="openTab('fourMTab', this)">4M 변경관리</button>
         <button class="tab-btn" onclick="openTab('customerTab', this)">고객사 8D</button>
         <button class="tab-btn" onclick="openTab('qmsTab', this)">QMS/문서</button>
+        <!-- 👇 새로 추가된 계측기 관리 탭 -->
+        <button class="tab-btn" onclick="openTab('instTab', this)">계측기 관리</button>
         
         <!-- 화면 인쇄 버튼을 오른쪽 끝으로 밀어주는 margin-left: auto 적용 -->
         <button class="action-btn no-print" onclick="window.print()" style="margin-left: auto; margin-bottom: -3px; background-color: #8e44ad; border-radius: 8px; font-size: 15px;">🖨️ 화면 인쇄</button>
@@ -392,7 +394,6 @@
             <h3 style="margin:0 15px 0 0; color:#1565c0; display:flex; align-items:center;">🔍 문서 이력 필터</h3>
             <div class="control-group"><label>연도 선택</label><select id="filterYearQms" onchange="renderQmsDocTable()"><option value="ALL">전체 연도</option></select></div>
             <div class="control-group"><label>문서 구분</label><select id="filterTypeQms" onchange="renderQmsDocTable()"><option value="ALL">전체 구분</option></select></div>
-            <!-- 👇 새롭게 추가된 '최신 파일만 보기' 드롭다운 👇 -->
             <div class="control-group"><label>최신 파일</label><select id="filterLatestQms" onchange="renderQmsDocTable()"><option value="ALL">전체 이력 보기</option><option value="LATEST">최신 Rev.만 보기</option></select></div>
         </div>
 
@@ -428,6 +429,61 @@
             <table class="ng-table">
                 <thead><tr><th style="width:10%;">구분</th><th style="width:12%;">문서/양식 번호</th><th style="width:22%;">문서/양식명</th><th style="width:6%;">Rev.</th><th style="width:12%;">시행 일자</th><th style="width:23%;">제/개정 사유</th><th style="width:10%;">첨부파일</th><th style="width:5%;">관리</th></tr></thead>
                 <tbody id="qmsDocTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 8. 계측기 관리 탭 (새로 추가됨) -->
+    <div id="instTab" class="tab-content">
+        <div class="controls" style="background:#e8f5e9; border:1px solid #a5d6a7;">
+            <h3 style="margin:0 15px 0 0; color:#2e7d32; display:flex; align-items:center;">🔍 계측기 조회 필터</h3>
+            <div class="control-group">
+                <label>검교정 상태</label>
+                <select id="filterStatusInst" onchange="renderInstTable()">
+                    <option value="ALL">전체 보기</option>
+                    <option value="WARNING">교정 임박 (30일 이내)</option>
+                    <option value="EXPIRED">교정 지연 (초과)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="data-card" style="background:#f8f9fa;">
+            <div class="card-header" style="color:#2c3e50; font-size: 1.1em;">신규 계측기 및 검교정 이력 등록</div>
+            <div style="display:flex; flex-wrap:wrap; gap:15px; align-items:flex-end;">
+                <div class="control-group"><label>계측기명</label><input type="text" id="inputInstName" placeholder="ex) 마이크로미터"></div>
+                <div class="control-group"><label>사양</label><input type="text" id="inputInstSpec" placeholder="ex) 0~25mm"></div>
+                <div class="control-group"><label>기기번호</label><input type="text" id="inputInstNo" placeholder="S/N 입력"></div>
+                <div class="control-group"><label>구입년월</label><input type="month" id="inputInstPurchase"></div>
+                <div class="control-group"><label>수량</label><input type="number" id="inputInstQty" min="1" step="1" value="1" style="width:80px;"></div>
+                
+                <div class="control-group"><label>최근검교정일</label><input type="date" id="inputInstLastCal"></div>
+                <div class="control-group"><label>검교정예정일</label><input type="date" id="inputInstNextCal"></div>
+                
+                <div class="control-group" style="flex:1;"><label>특이사항</label><input type="text" id="inputInstRemark" style="width:100%;"></div>
+                <div class="control-group" style="flex:1;"><label style="color:#27ae60;">📁 검교정 성적서 첨부</label><input type="file" id="inputInstFile" style="background: white; border-color: #27ae60;"></div>
+                <button class="action-btn" onclick="addInstrument()">계측기 등록</button>
+            </div>
+        </div>
+        
+        <h3 style="margin-top: 10px; color: #2c3e50; font-size: 20px;">📋 계측기 및 검교정 관리 대장</h3>
+        <div class="table-container">
+            <table class="ng-table" style="font-size: 14px;">
+                <thead>
+                    <tr>
+                        <th style="width:10%;">계측기명</th>
+                        <th style="width:10%;">사양</th>
+                        <th style="width:10%;">기기번호</th>
+                        <th style="width:8%;">구입년월</th>
+                        <th style="width:5%;">수량</th>
+                        <th style="width:10%;">최근검교정일</th>
+                        <th style="width:10%;">검교정예정일</th>
+                        <th style="width:8%;">잔여일</th>
+                        <th style="width:14%;">특이사항</th>
+                        <th style="width:10%;">성적서</th>
+                        <th style="width:5%;">관리</th>
+                    </tr>
+                </thead>
+                <tbody id="instTableBody"></tbody>
             </table>
         </div>
     </div>
@@ -483,7 +539,7 @@
     }
 
     window.addEventListener('load', () => {
-        init4MTab(); init8DTab(); initQmsTab(); setupImagePaste();
+        init4MTab(); init8DTab(); initQmsTab(); initInstTab(); setupImagePaste();
     });
 
     function openTab(tabName, btnElement) {
@@ -496,6 +552,7 @@
             if(tabName === 'fourMTab') render4MTable();
             if(tabName === 'customerTab') render8DList();
             if(tabName === 'qmsTab') renderQmsDocTable();
+            if(tabName === 'instTab') renderInstTable();
         }, 50);
     }
 
@@ -945,7 +1002,7 @@
     }
 
     // ==========================================
-    // ⭐ 5. 4M 변경 관리 로직 (구글 시트 연동 + 차트 짤림 방지)
+    // ⭐ 5. 4M 변경 관리 로직 
     // ==========================================
     let fourMData = [];
     let fourMDynamicChart = null; 
@@ -1041,7 +1098,7 @@
     }
 
     // ==========================================
-    // ⭐ 6. 고객사 부적합 8D 로직 (구글 시트 연동 + 차트 짤림 방지)
+    // ⭐ 6. 고객사 부적합 8D 로직
     // ==========================================
     let eightDData = []; 
     let eightDDynamicChart = null;
@@ -1168,7 +1225,7 @@
     }
 
     // ==========================================
-    // ⭐ 7. QMS 양식 관리 로직 (구글 시트 연동 + 차트 짤림 방지)
+    // ⭐ 7. QMS 양식 관리 로직
     // ==========================================
     let qmsDocData = [];
     let qmsDynamicChart = null;
@@ -1217,7 +1274,6 @@
     function renderQmsDocTable() {
         const filterYear = document.getElementById('filterYearQms').value;
         const filterType = document.getElementById('filterTypeQms').value;
-        // 새로 추가된 필터링 값 가져오기
         const filterLatest = document.getElementById('filterLatestQms') ? document.getElementById('filterLatestQms').value : 'ALL';
 
         let years = new Set(qmsDocData.map(d => d.date ? d.date.split('-')[0] : ''));
@@ -1234,19 +1290,16 @@
         [...types].sort().forEach(t => typeSelect.appendChild(new Option(t, t)));
         typeSelect.value = filterType;
 
-        // 1차 필터 (연도, 문서구분)
         let filtered = qmsDocData.filter(d => (filterYear === 'ALL' || (d.date && d.date.split('-')[0] === filterYear)) && (filterType === 'ALL' || d.type === filterType));
 
-        // 🚨 2차 필터 (최신 파일만 모아보기 로직 추가)
         if (filterLatest === 'LATEST') {
             let latestMap = {};
             filtered.forEach(d => {
-                // 문서/양식 번호(docNo)가 같은 것들 중 Rev 숫자가 가장 높은 것만 덮어쓰면서 남김
                 if (!latestMap[d.docNo] || parseInt(d.rev) > parseInt(latestMap[d.docNo].rev)) {
                     latestMap[d.docNo] = d;
                 }
             });
-            filtered = Object.values(latestMap); // 살아남은 최신본들만 다시 배열로 변환
+            filtered = Object.values(latestMap); 
         }
 
         drawQmsDynamicChart(filtered);
@@ -1309,6 +1362,146 @@
                 await sendToSheet('QMS', 'delete', null, id);
             } 
         }, "삭제"); 
+    }
+
+    // ==========================================
+    // ⭐ 8. 계측기 관리 로직 (새로 추가)
+    // ==========================================
+    let instData = [];
+
+    async function initInstTab() {
+        document.getElementById('instTableBody').innerHTML = '<tr><td colspan="11" style="padding: 20px;">데이터를 불러오는 중입니다...</td></tr>';
+        instData = await fetchFromSheet('Instrument');
+        renderInstTable();
+    }
+
+    function addInstrument() {
+        requireAuth(async () => {
+            const name = document.getElementById('inputInstName').value.trim();
+            const spec = document.getElementById('inputInstSpec').value.trim();
+            const instNo = document.getElementById('inputInstNo').value.trim();
+            const purchase = document.getElementById('inputInstPurchase').value;
+            const qty = document.getElementById('inputInstQty').value;
+            const lastCal = document.getElementById('inputInstLastCal').value;
+            const nextCal = document.getElementById('inputInstNextCal').value;
+            const remark = document.getElementById('inputInstRemark').value.trim();
+            const fileInput = document.getElementById('inputInstFile');
+
+            if(!name || !instNo || !nextCal) return alert("계측기명, 기기번호, 검교정예정일은 필수 입력입니다.");
+
+            const saveInstRecord = async (fileData = null, fileName = null) => {
+                const newInst = {
+                    id: Date.now().toString(),
+                    name, spec, instNo, purchase, qty, lastCal, nextCal, remark, fileData, fileName
+                };
+                
+                instData.push(newInst);
+                
+                document.getElementById('inputInstName').value = '';
+                document.getElementById('inputInstSpec').value = '';
+                document.getElementById('inputInstNo').value = '';
+                document.getElementById('inputInstPurchase').value = '';
+                document.getElementById('inputInstQty').value = '1';
+                document.getElementById('inputInstLastCal').value = '';
+                document.getElementById('inputInstNextCal').value = '';
+                document.getElementById('inputInstRemark').value = '';
+                fileInput.value = '';
+
+                renderInstTable();
+                await sendToSheet('Instrument', 'insert', newInst);
+                alert("계측기 등록 완료.");
+            };
+
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0]; 
+                if(file.size > 40 * 1024) return alert("첨부 파일은 40KB 이하만 가능합니다. (용량 초과 시 압축/링크 권장)");
+                const reader = new FileReader(); 
+                reader.onload = function(e) { saveInstRecord(e.target.result, file.name); }; 
+                reader.readAsDataURL(file);
+            } else {
+                saveInstRecord(null, null);
+            }
+        }, "계측기 등록");
+    }
+
+    function deleteInstrument(id) {
+        requireAuth(async () => { 
+            if(confirm("해당 계측기 이력을 삭제하시겠습니까?")) { 
+                instData = instData.filter(d => String(d.id) !== String(id)); 
+                renderInstTable(); 
+                await sendToSheet('Instrument', 'delete', null, id);
+            } 
+        }, "삭제");
+    }
+
+    function renderInstTable() {
+        const tbody = document.getElementById('instTableBody');
+        tbody.innerHTML = '';
+        const filterStatus = document.getElementById('filterStatusInst').value;
+        
+        let filtered = instData;
+        let today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // 잔여일 사전 계산 및 필터링
+        filtered = filtered.map(d => {
+            let remainDays = null;
+            if(d.nextCal) {
+                let nextDate = new Date(d.nextCal);
+                let diffTime = nextDate - today;
+                remainDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            }
+            return { ...d, remainDays };
+        });
+
+        if (filterStatus === 'WARNING') {
+            filtered = filtered.filter(d => d.remainDays !== null && d.remainDays >= 0 && d.remainDays <= 30);
+        } else if (filterStatus === 'EXPIRED') {
+            filtered = filtered.filter(d => d.remainDays !== null && d.remainDays < 0);
+        }
+
+        if (filtered.length === 0) {
+            return tbody.innerHTML = `<tr><td colspan="11" style="padding: 20px;">등록된 계측기가 없습니다.</td></tr>`;
+        }
+
+        // 검교정예정일 오름차순 정렬 (급한 순)
+        filtered.sort((a,b) => new Date(a.nextCal || '2099-01-01') - new Date(b.nextCal || '2099-01-01')).forEach(d => {
+            let tr = document.createElement('tr');
+            
+            let remainHtml = '-';
+            let dateStyle = 'color: #333;';
+            
+            if (d.remainDays !== null) {
+                if (d.remainDays < 0) {
+                    remainHtml = `초과 (${Math.abs(d.remainDays)}일)`;
+                    dateStyle = 'color: #c0392b; font-weight: 900; background-color: #fde8e8;';
+                } else if (d.remainDays <= 30) {
+                    remainHtml = `${d.remainDays}일`;
+                    dateStyle = 'color: #d35400; font-weight: bold; background-color: #fef0f0;';
+                } else {
+                    remainHtml = `${d.remainDays}일`;
+                    dateStyle = 'color: #27ae60; font-weight: bold;';
+                }
+            }
+
+            let fileHTML = `<span style="color:#bdc3c7; font-size:12px;">파일 없음</span>`;
+            if (d.fileData && d.fileName) fileHTML = `<a href="${d.fileData}" download="${d.fileName}" class="download-btn" style="font-size:11px; padding:4px 8px;">⬇️ 성적서</a>`;
+
+            tr.innerHTML = `
+                <td style="font-weight: 900; color: #2c3e50;">${d.name || '-'}</td>
+                <td>${d.spec || '-'}</td>
+                <td style="color: #2980b9;">${d.instNo || '-'}</td>
+                <td>${d.purchase || '-'}</td>
+                <td>${d.qty || '1'}</td>
+                <td>${d.lastCal || '-'}</td>
+                <td style="${dateStyle}">${d.nextCal || '-'}</td>
+                <td style="${dateStyle}">${remainHtml}</td>
+                <td style="text-align: left; font-weight:normal;">${d.remark || '-'}</td>
+                <td>${fileHTML}</td>
+                <td><button class="delete-btn no-print" style="padding: 4px 8px; font-size:12px;" onclick="deleteInstrument('${d.id}')">삭제</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
     }
 
     function setupImagePaste() {
