@@ -144,7 +144,7 @@
 <div class="container">
     <!-- 👇 인쇄 시 탭 이름만 남도록 span 태그 구조 변경 -->
     <h2 id="main-dashboard-title" style="margin-top:0; color: #343a40; font-weight: 900;">
-        <span class="no-print">📊 제조 품질 통합 대시보드 </span><span class="print-title-text">- MSA Cg/Cgk</span>
+        <span class="no-print">📊 제조 품질 통합 대시보드 </span><span class="print-title-text">MSA Cg/Cgk</span>
     </h2>
     
     <div class="tab-menu">
@@ -502,7 +502,7 @@
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(tabName).classList.add('active'); btnElement.classList.add('active');
         
-        document.getElementById('main-dashboard-title').innerHTML = `<span class="no-print">📊 제조 품질 통합 대시보드 </span><span class="print-title-text">- ${btnElement.innerText}</span>`;
+        document.getElementById('main-dashboard-title').innerHTML = `<span class="no-print">📊 제조 품질 통합 대시보드 </span><span class="print-title-text">${btnElement.innerText}</span>`;
         
         setTimeout(() => { if(tabName === 'fourMTab') render4MTable(); if(tabName === 'customerTab') render8DList(); if(tabName === 'qmsTab') renderQmsDocTable(); if(tabName === 'instTab') renderInstTable(); }, 50);
     }
