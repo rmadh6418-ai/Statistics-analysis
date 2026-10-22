@@ -1,0 +1,15 @@
+{
+  "name": "제조 품질 통합 대시보드",
+  "short_name": "품질 대시보드",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f8f9fa",
+  "theme_color": "#34495e",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2621/2621040.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
