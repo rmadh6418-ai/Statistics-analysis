@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- 스마트폰 앱 설치(PWA) 강제 인식 코드 -->
     <link rel="manifest" href='data:application/manifest+json;utf-8,{"name":"제조 품질 통합 대시보드","short_name":"품질 대시보드","start_url":".","display":"standalone","background_color":"#f8f9fa","theme_color":"#34495e","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/2621/2621040.png","sizes":"512x512","type":"image/png"}]}'>
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -129,7 +128,6 @@
         <button class="action-btn no-print" onclick="window.print()" style="margin-left: auto; margin-bottom: -3px; background-color: #8e44ad; border-radius: 8px; font-size: 15px;">🖨️ 화면 인쇄</button>
     </div>
 
-    <!-- 1~6 탭 구조 생략 -->
     <div id="cgkTab" class="tab-content active"><div class="controls"><div class="control-group"><label>엑셀 데이터 업로드 (.xlsx)</label><input type="file" id="excelFileCgk" accept=".xlsx, .xls, .csv" /></div><div class="control-group hidden" id="controlsCgk"><label>보기 옵션</label><select id="viewSelectCgk" onchange="toggleViewCgk()"></select></div></div><div class="controls ai-controls hidden" id="aiControlsGroupCgk"><div class="control-group" style="flex: 1;"><label style="color: #1565c0;">🔑 Gemini API 키</label><input type="password" id="geminiApiKeyCgk" placeholder="API Key 입력"></div><button onclick="generateAIReportCgk()" class="ai-btn">🤖 AI 분석 실행</button></div><div id="aiReportAreaCgk" class="ai-report-area hidden"><div class="ai-header-bar" onclick="toggleAiReport('aiReportContentCgk', 'iconCgk')"><h3>💡 AI 리포트</h3><span id="iconCgk" class="ai-toggle-icon">▼</span></div><div id="aiReportContentCgk" class="ai-report-content"></div></div><div class="hidden" id="summarySectionCgk" style="overflow-x: auto;"><table class="summary-table"><thead><tr><th>데이터셋</th><th>N</th><th>Ref</th><th>USL / LSL</th><th>Mean</th><th>StdDev</th><th>Cg</th><th>Cgk</th><th>판정</th></tr></thead><tbody id="summaryTableBodyCgk"></tbody></table></div><div id="detailDashboardCgk"></div></div>
     <div id="cpkTab" class="tab-content"><div class="controls"><div class="control-group"><label>엑셀 업로드 (.xlsx)</label><input type="file" id="excelFileCpk" accept=".xlsx, .xls"></div><div class="control-group"><label>분석 그룹</label><select id="categorySelectCpk" disabled><option>대기 중...</option></select></div><div class="control-group" id="chartTypeGroupCpk"><label>관리도 유형</label><select id="chartTypeSelectCpk"><option value="Xbar-R">Xbar-R Chart</option><option value="I-MR">I-MR Chart</option></select></div><div class="control-group"><label>LSL (하한)</label><input type="number" id="lslCpk" step="0.001" value="20.9"></div><div class="control-group"><label>USL (상한)</label><input type="number" id="uslCpk" step="0.001" value="21.0"></div><div class="control-group" id="subgroupSizeGroupCpk"><label>부분군 크기(n)</label><input type="number" id="subgroupSizeCpk" min="2" max="10" value="5"></div></div><div class="controls ai-controls" id="aiControlsGroupCpk"><div class="control-group" style="flex: 1;"><label style="color: #1565c0;">🔑 Gemini API 키</label><input type="password" id="geminiApiKeyCpk" placeholder="API Key 입력"></div><button onclick="generateAIReportCpk()" class="ai-btn">🤖 AI 분석 실행</button></div><div id="singleCategoryViewCpk"><div class="metrics-grid"><div class="metric-card"><h3>평균</h3><p id="txt-mean-cpk">-</p></div><div class="metric-card"><h3>표준편차</h3><p id="txt-std-lt-cpk">-</p></div><div class="metric-card highlight"><h3>Pp</h3><p id="txt-pp-cpk">-</p></div><div class="metric-card highlight"><h3>Ppk</h3><p id="txt-ppk-cpk">-</p></div><div class="metric-card highlight"><h3>Cp</h3><p id="txt-cp-cpk">-</p></div><div class="metric-card highlight"><h3>Cpk</h3><p id="txt-cpk-cpk">-</p></div></div><div id="aiReportAreaCpk" class="ai-report-area hidden"><div class="ai-header-bar" onclick="toggleAiReport('aiReportContentCpk', 'iconCpk')"><h3>💡 AI 리포트</h3><span id="iconCpk" class="ai-toggle-icon">▼</span></div><div id="aiReportContentCpk" class="ai-report-content"></div></div><div class="chart-row"><div class="chart-box" id="chartHistCpk" style="height: 450px;"></div><div class="chart-box" id="chartBoxCpk" style="height: 450px;"></div></div><div class="chart-box" id="chartTopCpk" style="height: 450px; margin-bottom:20px;"></div><div class="chart-box" id="chartBottomCpk" style="height: 450px;"></div></div><div id="allCategoriesViewCpk" class="hidden"><div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px;" id="allChartsGridCpk"></div></div></div>
     <div id="grrTab" class="tab-content"><div class="controls" style="background:#f4fce3; border:1px solid #c0eb75;"><div class="control-group"><label>Gage R&R 측정 데이터 (.xlsx)</label><input type="file" id="excelFileGrr" accept=".xlsx, .xls, .csv" /></div><div class="control-group"><label>도면 공차 (Tolerance)</label><input type="number" id="toleranceGrr" placeholder="빈칸 시 %TV 분석만 진행" style="min-width: 200px;"></div><div class="control-group" style="justify-content: flex-end;"><button class="action-btn" onclick="recalcGrr()" style="background-color:#2b8a3e;">다시 계산하기</button></div><div class="control-group" style="margin-left:auto; justify-content:center;"><a href="#" onclick="downloadGrrTemplate()" style="color:#2b8a3e; text-decoration:underline; font-size:15px; font-weight:900;">📄 측정 표준 양식 다운로드 (3x10x3)</a></div></div><div class="metrics-grid"><div class="metric-card" id="card-grr-tv"><h3>총 변동 (Total Var)</h3><p id="txt-grr-tv">-</p><span class="sub-text">TV = 6 * Sigma_TV</span></div><div class="metric-card" id="card-grr-grr-tv"><h3>%GR&R (%Study Var)</h3><p id="txt-grr-percent-tv">-</p><span class="sub-text">총 변동(TV) 기준 오차율</span></div><div class="metric-card" id="card-grr-grr-tol" style="border: 2px solid #8e44ad; background: #f3e5f5;"><h3 style="color:#8e44ad;">%Tolerance (P/T Ratio)</h3><p id="txt-grr-percent-tol" style="color:#8e44ad;">-</p><span class="sub-text">도면 공차 기준 오차율</span></div><div class="metric-card" id="card-grr-ev"><h3>%EV (반복성/계측기)</h3><p id="txt-grr-ev">-</p><span class="sub-text" id="sub-ev-base">기준: -</span></div><div class="metric-card" id="card-grr-av"><h3>%AV (재현성/작업자)</h3><p id="txt-grr-av">-</p><span class="sub-text" id="sub-av-base">기준: -</span></div><div class="metric-card" id="card-grr-ndc"><h3>ndc (구분범주수)</h3><p id="txt-grr-ndc">-</p><span class="sub-text">목표: 5 이상</span></div></div><div id="grrChartsArea" style="display: none;"><div class="chart-row"><div class="chart-box" style="height: 450px;"><canvas id="grrChartBar"></canvas></div><div class="chart-box" style="height: 450px;"><canvas id="grrChartLine"></canvas></div></div></div></div>
@@ -181,7 +179,7 @@
             <div class="card-header" style="color:#27ae60; font-size: 1.1em; border-bottom: 2px solid #2ecc71; padding-bottom: 8px;">📁 계측기 이력카드 종합 엑셀파일 관리</div>
             <div style="display:flex; flex-wrap:wrap; gap:15px; align-items:flex-end;">
                 <div class="control-group" style="flex:1; min-width: 300px;">
-                    <label>종합 엑셀파일 1개 직접 첨부 (최대 20MB 완벽 지원)</label>
+                    <label>종합 엑셀파일 1개 직접 첨부 (최대 20MB 지원)</label>
                     <input type="file" id="masterInstFile" accept=".xlsx, .xls" style="background: white; border-color: #27ae60; width: 100%;">
                 </div>
                 <button class="action-btn" id="btnSaveMasterInst" style="background-color: #27ae60; height: 43px;" onclick="uploadMasterInstFile()">파일 업로드 / 덮어쓰기</button>
@@ -268,12 +266,11 @@
 
 <script>
     // 🚨 [필수입력] 위 1단계에서 새로 배포한 웹앱 URL을 꽂아주세요! 🚨
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxF7Nfh0Wlcy_E1UKpjSVJ6uELvQxEVNWoj5kKir7Nj-kF0bcHOClBumFKP2Qx-Nqwl/exec";
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycby3w-0eGdoDO5Pi1-w9sHaNy4HtyFixJrN2tkp93mNOr1-v4JSGDavMd225_dbT8J19/exec";
 
     // 데이터 저장용 글로벌 객체 (과거 파일 Blob 변환용)
     window.fileDataStore = {};
 
-    // 🚨 1. 과거 Base64 데이터 파일 다운로드 완벽 복원 로직 🚨
     window.downloadBase64File = function(dataId, fileName) {
         try {
             const base64Data = window.fileDataStore[dataId];
@@ -301,22 +298,23 @@
         }
     };
 
-    // 통신 헬퍼 함수
     async function fetchFromSheet(sheetName) {
         try { const response = await fetch(`${GAS_API_URL}?sheetName=${sheetName}`); return await response.json(); } 
         catch (error) { return []; }
     }
+    
     async function sendToSheetRaw(payload) {
         const res = await fetch(GAS_API_URL, { redirect: 'follow', method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
         return await res.json();
     }
+    
     async function sendToSheet(sheetName, action, data = null, id = null) {
         const res = await sendToSheetRaw({ sheetName, action, data, id });
         if(res.status === 'error') throw new Error(res.message || "Unknown error");
         return res;
     }
 
-    // 🚨 2. 분할 업로드 (Chunking) 로직 - 20MB 파일 통과를 위한 핵심 🚨
+    // 🚨 20MB 대용량 파일 분할(Chunking) 업로드 로직 + 명확한 에러 핸들링 추가
     async function uploadLargeFile(file, sheetName, finalAction, recordData, btnElement) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -325,7 +323,7 @@
                     const base64Data = e.target.result.split(',')[1];
                     const mimeType = e.target.result.split(';')[0].replace('data:', '');
                     
-                    const chunkSize = 1024 * 1024 * 2; // 2MB 단위로 쪼개기
+                    const chunkSize = 1024 * 1024 * 1; // 1MB 씩 쪼개기
                     const totalChunks = Math.ceil(base64Data.length / chunkSize);
                     let chunkIds = [];
 
@@ -339,16 +337,18 @@
                             fileName: `chunk_${Date.now()}_${i}`
                         });
                         
-                        if (res.status === 'ok' && res.chunkId) {
+                        if (res.status === 'error') {
+                            throw new Error("서버 에러 상세: " + res.message);
+                        } else if (res.status === 'ok' && res.chunkId) {
                             chunkIds.push(res.chunkId);
                         } else {
-                            throw new Error("서버 조각 전송 실패");
+                            throw new Error("알 수 없는 전송 실패");
                         }
                     }
 
                     if(btnElement) btnElement.innerText = "조각 병합 및 최종 저장 중...";
                     
-                    await sendToSheetRaw({
+                    const finalRes = await sendToSheetRaw({
                         sheetName: sheetName,
                         action: finalAction,
                         record: recordData,
@@ -356,6 +356,9 @@
                         mimeType: mimeType,
                         fileName: file.name
                     });
+
+                    if (finalRes.status === 'error') throw new Error(finalRes.message);
+                    
                     resolve();
                 } catch (err) { reject(err); }
             };
@@ -365,10 +368,7 @@
     }
 
     function formatDateSafe(dStr) { if (!dStr) return '-'; return String(dStr).split('T')[0]; }
-    function formatMonthSafe(dStr) {
-        if (!dStr) return '-'; const str = String(dStr).split('T')[0]; const parts = str.split('-');
-        if (parts.length >= 2) return `${parts[0]}-${parts[1]}`; return str;
-    }
+    function formatMonthSafe(dStr) { if (!dStr) return '-'; const str = String(dStr).split('T')[0]; const parts = str.split('-'); if (parts.length >= 2) return `${parts[0]}-${parts[1]}`; return str; }
 
     Chart.register(ChartDataLabels); Chart.defaults.font.size = 13; Chart.defaults.font.weight = 'bold'; Chart.defaults.color = '#333'; Chart.defaults.plugins.datalabels = { display: false, color: '#333', font: { weight: 'bold', size: 14 } };
 
@@ -390,17 +390,13 @@
     }
 
     let cgkData = {}; let cgkConfig = {}; let cgkRunCharts = {}; let cgkHistCharts = {};
-    document.getElementById('excelFileCgk').addEventListener('change', function(e) {
-        const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
-        reader.onload = function(e) { processCgkData(XLSX.utils.sheet_to_json(XLSX.read(new Uint8Array(e.target.result), {type: 'array'}).Sheets[XLSX.read(new Uint8Array(e.target.result), {type: 'array'}).SheetNames[0]], { header: 1, defval: "" })); }; reader.readAsArrayBuffer(file);
-    });
+    document.getElementById('excelFileCgk').addEventListener('change', function(e) { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { processCgkData(XLSX.utils.sheet_to_json(XLSX.read(new Uint8Array(e.target.result), {type: 'array'}).Sheets[XLSX.read(new Uint8Array(e.target.result), {type: 'array'}).SheetNames[0]], { header: 1, defval: "" })); }; reader.readAsArrayBuffer(file); });
     function processCgkData(rows) { } function initCgkDashboard() { }
     let fourMData = []; async function init4MTab() { fourMData = await fetchFromSheet('4M'); render4MTable(); } function render4MTable() { }
     let eightDData = []; async function init8DTab() { eightDData = await fetchFromSheet('8D'); render8DList(); } function render8DList() { }
 
     let qmsDocData = [];
     async function initQmsTab() { document.getElementById('qmsDocTableBody').innerHTML = '<tr><td colspan="8" style="padding: 20px;">데이터를 불러오는 중입니다...</td></tr>'; qmsDocData = await fetchFromSheet('QMS'); renderQmsDocTable(); }
-
     function renderQmsDocTable() {
         const filterYear = document.getElementById('filterYearQms').value; const filterType = document.getElementById('filterTypeQms').value; const filterLatest = document.getElementById('filterLatestQms') ? document.getElementById('filterLatestQms').value : 'ALL';
         let years = new Set(qmsDocData.map(d => d.date ? formatDateSafe(d.date).split('-')[0] : '')); let types = new Set(qmsDocData.map(d => d.type));
@@ -420,15 +416,12 @@
 
             let fileHTML = `<span style="color:#bdc3c7; font-size:13px;">첨부 없음</span>`;
             if (d.fileData) {
-                if (d.fileData.startsWith('http')) {
-                    fileHTML = `<a href="${d.fileData}" target="_blank" class="download-btn">🔗 다운로드</a>`;
-                } else if (d.fileData.startsWith('data:')) {
-                    const dataId = 'qms_' + d.id;
-                    window.fileDataStore[dataId] = d.fileData;
+                if (d.fileData.startsWith('http')) { fileHTML = `<a href="${d.fileData}" target="_blank" class="download-btn">🔗 열기</a>`; } 
+                else if (d.fileData.startsWith('data:')) {
+                    const dataId = 'qms_' + d.id; window.fileDataStore[dataId] = d.fileData;
                     fileHTML = `<button onclick="downloadBase64File('${dataId}', '${d.fileName}')" class="download-btn">⬇️ 다운로드</button>`;
                 }
             }
-
             tr.innerHTML = `<td style="color: ${typeColor}; font-weight: 900;">${d.type}</td><td style="font-weight: bold;">${d.docNo}</td><td style="font-weight: bold; text-align: left;">${d.name}</td><td>Rev. ${d.rev}</td><td>${formatDateSafe(d.date)}</td><td style="text-align: left; color: #495057;">${d.reason}</td><td>${fileHTML}</td><td><button class="delete-btn no-print" onclick="deleteQmsDocument('${d.id}')">삭제</button></td>`;
             tbody.appendChild(tr);
         });
@@ -436,9 +429,7 @@
 
     function addQmsDocument() {
         requireAuth(async () => {
-            const type = document.getElementById('inputDocType').value; const docNo = document.getElementById('inputDocNo').value.trim(); const name = document.getElementById('inputDocName').value.trim();
-            const rev = document.getElementById('inputDocRev').value; const date = document.getElementById('inputDocDate').value; const reason = document.getElementById('inputDocReason').value.trim();
-            const fileInput = document.getElementById('inputDocFile'); const btn = document.getElementById('btnSaveQms');
+            const type = document.getElementById('inputDocType').value; const docNo = document.getElementById('inputDocNo').value.trim(); const name = document.getElementById('inputDocName').value.trim(); const rev = document.getElementById('inputDocRev').value; const date = document.getElementById('inputDocDate').value; const reason = document.getElementById('inputDocReason').value.trim(); const fileInput = document.getElementById('inputDocFile'); const btn = document.getElementById('btnSaveQms');
             if(!docNo || !name || !date) return alert("필수 입력 항목 누락.");
 
             btn.innerText = "처리 중..."; btn.disabled = true;
@@ -462,7 +453,7 @@
     function deleteQmsDocument(id) { requireAuth(async () => { if(confirm("삭제하시겠습니까?")) { qmsDocData = qmsDocData.filter(d => String(d.id) !== String(id)); renderQmsDocTable(); await sendToSheet('QMS', 'delete', null, id); } }, "삭제"); }
 
     // ==========================================
-    // ⭐ 8. 계측기 관리 로직 (ID 식별값 픽스 적용)
+    // ⭐ 8. 계측기 관리 로직 (종합 파일 연동 완벽 수정)
     // ==========================================
     let instData = [];
     let masterInstFileRec = null;
@@ -475,8 +466,7 @@
             document.getElementById('inputInstNextCal').value = `${y}-${m}-${day}`;
         } else { document.getElementById('inputInstNextCal').value = ''; }
     }
-    document.getElementById('inputInstLastCal').addEventListener('change', calcNextCalDate);
-    document.getElementById('inputInstCycle').addEventListener('input', calcNextCalDate);
+    document.getElementById('inputInstLastCal').addEventListener('change', calcNextCalDate); document.getElementById('inputInstCycle').addEventListener('input', calcNextCalDate);
 
     async function initInstTab() {
         document.getElementById('instTableBody').innerHTML = '<tr><td colspan="13" style="padding: 20px;">데이터를 불러오는 중입니다...</td></tr>';
@@ -495,24 +485,17 @@
 
             btn.disabled = true;
             try {
-                // 🚨 ID를 확정 고정시켜서 찾을 수 있게 버그 픽스!
-                const record = { id: 'MASTER_EXCEL_INST', name: '계측기 종합 이력카드 엑셀파일' };
-                
-                await sendToSheet('Instrument', 'delete', null, 'MASTER_EXCEL_INST');
+                // 🚨 고정 ID를 부여해서 화면을 그릴 때 헷갈리지 않고 정확히 인식하도록 픽스!
+                const record = { id: 'MASTER_EXCEL_INST', type: 'MASTER' };
                 
                 await uploadLargeFile(file, 'Instrument', 'insert_chunked', record, btn);
                 
                 instData = await fetchFromSheet('Instrument');
                 
-                alert("계측기 이력카드 종합 엑셀파일이 성공적으로 업로드되었습니다.");
-                fileInput.value = '';
-                renderInstTable(); 
-            } catch (e) {
-                alert("업로드 실패: " + e.message + "\n기존 파일은 안전하게 유지됩니다.");
-            } finally {
-                btn.innerText = "파일 업로드 / 덮어쓰기";
-                btn.disabled = false;
-            }
+                alert("종합 엑셀파일이 성공적으로 업로드 되었습니다.");
+                fileInput.value = ''; renderInstTable(); 
+            } catch (e) { alert("업로드 실패: " + e.message); } 
+            finally { btn.innerText = "파일 업로드 / 덮어쓰기"; btn.disabled = false; }
         }, "종합 엑셀파일 업로드");
     }
 
@@ -530,19 +513,14 @@
                     const file = fileInput.files[0]; 
                     if(file.size > 20 * 1024 * 1024) throw new Error("최대 20MB 이하만 가능합니다.");
                     await uploadLargeFile(file, 'Instrument', 'insert_chunked', newInst, btn);
-                } else {
-                    await sendToSheet('Instrument', 'insert', newInst);
-                }
+                } else { await sendToSheet('Instrument', 'insert', newInst); }
                 
                 instData = await fetchFromSheet('Instrument');
                 
                 document.getElementById('inputInstCode').value = ''; document.getElementById('inputInstName').value = ''; document.getElementById('inputInstSpec').value = ''; document.getElementById('inputInstNo').value = ''; document.getElementById('inputInstPurchase').value = ''; document.getElementById('inputInstQty').value = '1'; document.getElementById('inputInstCycle').value = '12'; document.getElementById('inputInstLastCal').value = ''; document.getElementById('inputInstNextCal').value = ''; document.getElementById('inputInstRemark').value = ''; fileInput.value = '';
                 renderInstTable(); alert("계측기 등록 완료.");
-            } catch(e) {
-                alert("등록 실패: " + e.message);
-            } finally {
-                btn.innerText = "계측기 등록"; btn.disabled = false;
-            }
+            } catch(e) { alert("등록 실패: " + e.message); } 
+            finally { btn.innerText = "계측기 등록"; btn.disabled = false; }
         }, "계측기 등록");
     }
 
@@ -553,7 +531,6 @@
     function renderInstTable() {
         const tbody = document.getElementById('instTableBody'); tbody.innerHTML = '';
         
-        // 🚨 고정된 ID로 완벽하게 필터 및 추출!
         let regularInstData = instData.filter(d => d.id !== 'MASTER_EXCEL_INST');
         masterInstFileRec = instData.find(d => d.id === 'MASTER_EXCEL_INST');
 
@@ -561,12 +538,12 @@
         if (masterInstFileRec && masterInstFileRec.fileData) {
             let href = masterInstFileRec.fileData; let name = masterInstFileRec.fileName || '종합_이력카드.xlsx';
             if(href.startsWith('http')) { 
-                masterContainer.innerHTML = `<a href="${href}" target="_blank" class="download-btn" style="padding: 10px 20px; font-size: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">🔗 ${name} 열람 및 다운로드</a>`; 
+                masterContainer.innerHTML = `<a href="${href}" target="_blank" class="download-btn" style="padding: 10px 20px; font-size: 15px; border-radius: 6px;">🔗 ${name} 열기</a>`; 
             } else if (href.startsWith('data:')) { 
                 window.fileDataStore['master'] = href;
-                masterContainer.innerHTML = `<button onclick="downloadBase64File('master', '${name}')" class="download-btn" style="padding: 10px 20px; font-size: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">⬇️ ${name} 다운로드</button>`; 
+                masterContainer.innerHTML = `<button onclick="downloadBase64File('master', '${name}')" class="download-btn" style="padding: 10px 20px; font-size: 15px; border-radius: 6px;">⬇️ ${name} 다운로드</button>`; 
             }
-        } else { masterContainer.innerHTML = `<span style="color: #7f8c8d; font-weight: normal;">등록된 엑셀파일이 없습니다.</span>`; }
+        } else { masterContainer.innerHTML = `<span style="color: #7f8c8d; font-weight: normal;">등록된 종합 엑셀파일이 없습니다.</span>`; }
 
         const filterYear = document.getElementById('filterYearInst').value; const filterName = document.getElementById('filterNameInst').value; const filterStatus = document.getElementById('filterStatusInst').value;
         
@@ -616,6 +593,20 @@
 
             tr.innerHTML = `<td style="font-weight: 900; color: #8e44ad;">${d.instCode || '-'}</td><td style="font-weight: 900; color: #2c3e50;">${d.name || '-'}</td><td>${d.spec || '-'}</td><td style="color: #2980b9;">${d.instNo || '-'}</td><td>${formatMonthSafe(d.purchase)}</td><td>${d.qty || '1'}</td><td style="color: #16a085;">${d.cycle || '-'}</td><td>${formatDateSafe(d.lastCal)}</td><td style="${dateStyle}">${formatDateSafe(d.nextCal)}</td><td style="${dateStyle}">${remainHtml}</td><td style="text-align: left; font-weight:normal;">${d.remark || '-'}</td><td>${fileHTML}</td><td><button class="delete-btn no-print" style="padding: 4px 8px; font-size:12px;" onclick="deleteInstrument('${d.id}')">삭제</button></td>`;
             tbody.appendChild(tr);
+        });
+    }
+
+    function setupImagePaste() {
+        document.querySelectorAll('.rich-editor').forEach(editor => {
+            editor.addEventListener('paste', function(e) {
+                const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+                for (let i = 0; i < items.length; i++) {
+                    if (items[i].type.indexOf("image") !== -1) {
+                        e.preventDefault(); const blob = items[i].getAsFile(); const reader = new FileReader();
+                        reader.onload = function(event) { const img = document.createElement("img"); img.src = event.target.result; img.style.maxWidth = "100%"; img.style.marginTop = "10px"; editor.appendChild(img); }; reader.readAsDataURL(blob);
+                    }
+                }
+            });
         });
     }
 </script>
