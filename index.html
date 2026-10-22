@@ -349,15 +349,15 @@
         </div>
     </div>
 
-    <!-- 8. 계측기 관리 탭 (수정됨) -->
+    <!-- 8. 계측기 관리 탭 -->
     <div id="instTab" class="tab-content">
         
-        <!-- 👇 종합 엑셀파일 첨부 전용 영역 (신규 2번 기능) -->
+        <!-- 👇 종합 엑셀파일 첨부 전용 영역 (최대 20MB로 상향) -->
         <div class="data-card" style="background:#e8fce8; border-color:#2ecc71; margin-bottom: 20px;">
             <div class="card-header" style="color:#27ae60; font-size: 1.1em; border-bottom: 2px solid #2ecc71; padding-bottom: 8px;">📁 계측기 이력카드 종합 엑셀파일 관리</div>
             <div style="display:flex; gap:15px; align-items:flex-end;">
                 <div class="control-group" style="flex:1;">
-                    <label>종합 엑셀파일 1개 첨부 (최대 2MB)</label>
+                    <label>종합 엑셀파일 1개 첨부 (최대 20MB)</label>
                     <input type="file" id="masterInstFile" accept=".xlsx, .xls" style="background: white; border-color: #27ae60;">
                 </div>
                 <button class="action-btn" style="background-color: #27ae60;" onclick="uploadMasterInstFile()">업로드 / 덮어쓰기</button>
@@ -369,14 +369,12 @@
 
         <div class="controls" style="background:#e8f5e9; border:1px solid #a5d6a7;">
             <h3 style="margin:0 15px 0 0; color:#2e7d32; display:flex; align-items:center;">🔍 계측기 조회 필터</h3>
-            <!-- 👇 검교정 연도 (누적관리 필터, 신규 1번 기능) -->
             <div class="control-group">
                 <label>검교정 연도</label>
                 <select id="filterYearInst" onchange="renderInstTable()">
                     <option value="ALL">전체 연도</option>
                 </select>
             </div>
-            <!-- 👇 계측기명 드롭다운 (신규 3번 기능) -->
             <div class="control-group">
                 <label>계측기명</label>
                 <select id="filterNameInst" onchange="renderInstTable()">
@@ -408,7 +406,8 @@
                 <div class="control-group"><label>검교정예정일 <span style="font-size:11px; color:#c0392b;">(자동계산)</span></label><input type="date" id="inputInstNextCal" readonly style="background-color: #e9ecef;"></div>
                 
                 <div class="control-group" style="flex:1;"><label>특이사항</label><input type="text" id="inputInstRemark" style="width:100%;"></div>
-                <div class="control-group" style="flex:1;"><label style="color:#27ae60;">📁 단품 성적서 첨부 (최대 2MB)</label><input type="file" id="inputInstFile" style="background: white; border-color: #27ae60;"></div>
+                <!-- 단품 성적서 용량도 20MB로 상향 -->
+                <div class="control-group" style="flex:1;"><label style="color:#27ae60;">📁 단품 성적서 첨부 (최대 20MB)</label><input type="file" id="inputInstFile" style="background: white; border-color: #27ae60;"></div>
                 <button class="action-btn" onclick="addInstrument()">계측기 등록</button>
             </div>
         </div>
@@ -466,6 +465,20 @@
         }
     }
 
+    // 날짜 포맷 정리 헬퍼 함수 (ISO 문자열에서 YYYY-MM-DD 만 추출)
+    function formatDateSafe(dStr) {
+        if (!dStr) return '-';
+        return String(dStr).split('T')[0];
+    }
+
+    function formatMonthSafe(dStr) {
+        if (!dStr) return '-';
+        const str = String(dStr).split('T')[0];
+        const parts = str.split('-');
+        if (parts.length >= 2) return `${parts[0]}-${parts[1]}`;
+        return str;
+    }
+
     Chart.register(ChartDataLabels);
     Chart.defaults.font.size = 13; Chart.defaults.font.weight = 'bold'; Chart.defaults.color = '#333';
     Chart.defaults.plugins.datalabels = { display: false, color: '#333', font: { weight: 'bold', size: 14 } };
@@ -499,7 +512,7 @@
     }
 
     // -------------------------------------------------------------
-    // MSA, CPK, Supplier, 4M, 8D, QMS 로직 (이전 답변과 완벽하게 동일)
+    // MSA, CPK, Supplier, 4M, 8D, QMS 로직 생략 (기존과 완벽 동일)
     // -------------------------------------------------------------
     let cgkData = {}; let cgkConfig = {}; let cgkRunCharts = {}; let cgkHistCharts = {};
     document.getElementById('excelFileCgk').addEventListener('change', function(e) {
@@ -515,23 +528,22 @@
     
     let fourMData = [];
     async function init4MTab() { document.getElementById('tableBody4M').innerHTML = '<tr><td colspan="6" style="padding: 20px;">데이터를 불러오는 중입니다...</td></tr>'; fourMData = await fetchFromSheet('4M'); render4MTable(); }
-    function render4MTable() { /* 위쪽에 원본 유지 */ }
+    function render4MTable() { /* 원본 유지 */ }
     
     let eightDData = []; 
     async function init8DTab() { document.getElementById('tableBody8D').innerHTML = '<tr><td colspan="6" style="padding: 20px;">데이터를 불러오는 중입니다...</td></tr>'; eightDData = await fetchFromSheet('8D'); render8DList(); }
-    function render8DList() { /* 위쪽에 원본 유지 */ }
+    function render8DList() { /* 원본 유지 */ }
 
     let qmsDocData = [];
     async function initQmsTab() { document.getElementById('qmsDocTableBody').innerHTML = '<tr><td colspan="8" style="padding: 20px;">데이터를 불러오는 중입니다...</td></tr>'; qmsDocData = await fetchFromSheet('QMS'); renderQmsDocTable(); }
-    function renderQmsDocTable() { /* 위쪽에 원본 유지 */ }
+    function renderQmsDocTable() { /* 원본 유지 */ }
 
     // ==========================================
-    // ⭐ 8. 계측기 관리 로직 (종합 파일, 연도/이름 누적 필터 반영)
+    // ⭐ 8. 계측기 관리 로직 
     // ==========================================
     let instData = [];
-    let masterInstFileRec = null; // 종합 엑셀파일을 담아둘 변수
+    let masterInstFileRec = null;
 
-    // 검교정 예정일 자동 계산
     function calcNextCalDate() {
         const lastStr = document.getElementById('inputInstLastCal').value;
         const cycle = parseInt(document.getElementById('inputInstCycle').value);
@@ -558,18 +570,20 @@
         renderInstTable();
     }
 
-    // 👇 종합 엑셀파일 업로드 함수 (신규)
+    // 👇 종합 엑셀파일 업로드 함수 (최대 20MB)
     function uploadMasterInstFile() {
         requireAuth(async () => {
             const fileInput = document.getElementById('masterInstFile');
             if (fileInput.files.length === 0) return alert("업로드할 종합 엑셀파일을 선택해주세요.");
             const file = fileInput.files[0];
-            if (file.size > 2 * 1024 * 1024) return alert("첨부 파일은 2MB 이하만 가능합니다.");
+            
+            // 20MB 용량 체크
+            if (file.size > 20 * 1024 * 1024) return alert("첨부 파일은 최대 20MB 이하만 가능합니다.");
 
             const reader = new FileReader();
             reader.onload = async function(e) {
                 const record = {
-                    id: 'MASTER_EXCEL_INST', // 종합 파일 식별자
+                    id: 'MASTER_EXCEL_INST',
                     type: 'MASTER',
                     fileName: file.name,
                     fileData: e.target.result
@@ -577,13 +591,12 @@
                 
                 masterInstFileRec = record;
                 
-                // 기존 종합 파일 삭제 후 새로운 파일 입력 (덮어쓰기 로직)
                 await sendToSheet('Instrument', 'delete', null, 'MASTER_EXCEL_INST');
                 await sendToSheet('Instrument', 'insert', record);
                 
                 alert("계측기 이력카드 종합 엑셀파일이 성공적으로 업로드되었습니다.");
                 fileInput.value = '';
-                renderInstTable(); // UI 리프레시
+                renderInstTable(); 
             };
             reader.readAsDataURL(file);
         }, "종합 엑셀파일 업로드");
@@ -632,7 +645,7 @@
 
             if (fileInput.files.length > 0) {
                 const file = fileInput.files[0]; 
-                if(file.size > 2 * 1024 * 1024) return alert("첨부 파일은 2MB 이하만 가능합니다. (용량 초과 시 압축/링크 권장)");
+                if(file.size > 20 * 1024 * 1024) return alert("첨부 파일은 최대 20MB 이하만 가능합니다.");
                 const reader = new FileReader(); 
                 reader.onload = function(e) { saveInstRecord(e.target.result, file.name); }; 
                 reader.readAsDataURL(file);
@@ -656,34 +669,31 @@
         const tbody = document.getElementById('instTableBody');
         tbody.innerHTML = '';
         
-        // 1. 종합 엑셀파일 데이터 분리 및 렌더링
         let regularInstData = instData.filter(d => d.id !== 'MASTER_EXCEL_INST' && d.type !== 'MASTER');
         masterInstFileRec = instData.find(d => d.id === 'MASTER_EXCEL_INST' || d.type === 'MASTER');
 
         const masterContainer = document.getElementById('masterInstFileContainer');
         if (masterInstFileRec && masterInstFileRec.fileData) {
-            masterContainer.innerHTML = `<a href="${masterInstFileRec.fileData}" download="${masterInstFileRec.fileName}" class="download-btn" style="padding: 10px 20px; font-size: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">⬇️ ${masterInstFileRec.fileName} 엑셀 열기</a>`;
+            // 버튼 클릭 시 20MB 파일이 정상적으로 다운로드됩니다.
+            masterContainer.innerHTML = `<a href="${masterInstFileRec.fileData}" download="${masterInstFileRec.fileName}" class="download-btn" style="padding: 10px 20px; font-size: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">⬇️ ${masterInstFileRec.fileName} 다운로드</a>`;
         } else {
             masterContainer.innerHTML = `<span style="color: #7f8c8d; font-weight: normal;">등록된 종합 엑셀파일이 없습니다.</span>`;
         }
 
-        // 2. 현재 선택된 필터값
         const filterYear = document.getElementById('filterYearInst').value;
         const filterName = document.getElementById('filterNameInst').value;
         const filterStatus = document.getElementById('filterStatusInst').value;
         
-        // 👇 연도 드롭다운 업데이트 (최근검교정일 및 검교정예정일 모두 추출하여 누적 관리)
         let years = new Set();
         regularInstData.forEach(d => {
-            if (d.lastCal) years.add(d.lastCal.split('-')[0]);
-            if (d.nextCal) years.add(d.nextCal.split('-')[0]);
+            if (d.lastCal) years.add(formatDateSafe(d.lastCal).split('-')[0]);
+            if (d.nextCal) years.add(formatDateSafe(d.nextCal).split('-')[0]);
         });
         const yearSelect = document.getElementById('filterYearInst');
         yearSelect.innerHTML = '<option value="ALL">전체 연도</option>';
-        [...years].filter(y => y).sort().reverse().forEach(y => yearSelect.appendChild(new Option(y + '년', y)));
+        [...years].filter(y => y !== '-').sort().reverse().forEach(y => yearSelect.appendChild(new Option(y + '년', y)));
         yearSelect.value = filterYear;
 
-        // 👇 계측기명 드롭다운 업데이트 (신규 추가됨)
         let names = new Set(regularInstData.map(d => d.name));
         const nameSelect = document.getElementById('filterNameInst');
         nameSelect.innerHTML = '<option value="ALL">전체 계측기</option>';
@@ -694,22 +704,20 @@
         let today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        // 연도 필터 적용 (누적관리: 최근검교정일 OR 예정일 중 하나라도 해당 연도에 속하면 표시)
         filtered = filtered.filter(d => {
             if (filterYear === 'ALL') return true;
-            const matchLast = d.lastCal && d.lastCal.startsWith(filterYear);
-            const matchNext = d.nextCal && d.nextCal.startsWith(filterYear);
+            const matchLast = formatDateSafe(d.lastCal).startsWith(filterYear);
+            const matchNext = formatDateSafe(d.nextCal).startsWith(filterYear);
             return matchLast || matchNext;
         });
 
-        // 계측기명 필터 적용
         filtered = filtered.filter(d => (filterName === 'ALL' || d.name === filterName));
 
-        // 잔여일 사전 계산 및 상태 필터링
         filtered = filtered.map(d => {
             let remainDays = null;
-            if(d.nextCal) {
-                let nextDate = new Date(d.nextCal);
+            let formattedNext = formatDateSafe(d.nextCal);
+            if(formattedNext !== '-') {
+                let nextDate = new Date(formattedNext);
                 let diffTime = nextDate - today;
                 remainDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             }
@@ -726,8 +734,7 @@
             return tbody.innerHTML = `<tr><td colspan="13" style="padding: 20px;">조건에 맞는 계측기 데이터가 없습니다.</td></tr>`;
         }
 
-        // 검교정예정일 오름차순 정렬 (급한 순)
-        filtered.sort((a,b) => new Date(a.nextCal || '2099-01-01') - new Date(b.nextCal || '2099-01-01')).forEach(d => {
+        filtered.sort((a,b) => new Date(formatDateSafe(a.nextCal) || '2099-01-01') - new Date(formatDateSafe(b.nextCal) || '2099-01-01')).forEach(d => {
             let tr = document.createElement('tr');
             
             let remainHtml = '-';
@@ -749,16 +756,17 @@
             let fileHTML = `<span style="color:#bdc3c7; font-size:12px;">파일 없음</span>`;
             if (d.fileData && d.fileName) fileHTML = `<a href="${d.fileData}" download="${d.fileName}" class="download-btn" style="font-size:11px; padding:4px 8px;">⬇️ 성적서</a>`;
 
+            // 👇 날짜 데이터 렌더링 시 포맷 헬퍼함수(formatDateSafe, formatMonthSafe)를 적용하여 날짜 표기 버그 수정 완료
             tr.innerHTML = `
                 <td style="font-weight: 900; color: #8e44ad;">${d.instCode || '-'}</td>
                 <td style="font-weight: 900; color: #2c3e50;">${d.name || '-'}</td>
                 <td>${d.spec || '-'}</td>
                 <td style="color: #2980b9;">${d.instNo || '-'}</td>
-                <td>${d.purchase || '-'}</td>
+                <td>${formatMonthSafe(d.purchase)}</td>
                 <td>${d.qty || '1'}</td>
                 <td style="color: #16a085;">${d.cycle || '-'}</td>
-                <td>${d.lastCal || '-'}</td>
-                <td style="${dateStyle}">${d.nextCal || '-'}</td>
+                <td>${formatDateSafe(d.lastCal)}</td>
+                <td style="${dateStyle}">${formatDateSafe(d.nextCal)}</td>
                 <td style="${dateStyle}">${remainHtml}</td>
                 <td style="text-align: left; font-weight:normal;">${d.remark || '-'}</td>
                 <td>${fileHTML}</td>
