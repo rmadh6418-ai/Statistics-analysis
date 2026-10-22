@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- 스마트폰 앱 설치(PWA) 강제 인식 코드 -->
     <link rel="manifest" href='data:application/manifest+json;utf-8,{"name":"제조 품질 통합 대시보드","short_name":"품질 대시보드","start_url":".","display":"standalone","background_color":"#f8f9fa","theme_color":"#34495e","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/2621/2621040.png","sizes":"512x512","type":"image/png"}]}'>
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -362,7 +361,10 @@
                 <div class="control-group"><label>Rev.</label><input type="number" id="inputDocRev" min="0" step="1" value="0" style="width:70px;"></div>
                 <div class="control-group"><label>시행 일자</label><input type="date" id="inputDocDate"></div>
                 <div class="control-group" style="flex:1;"><label>제/개정 사유 및 설명</label><input type="text" id="inputDocReason" style="width:100%;"></div>
+                
+                <!-- 🚨 일반 탭은 직접 파일 텍스트 임베딩으로 처리되도록 원래대로 되돌렸습니다. -->
                 <div class="control-group" style="flex:1;"><label style="color:#27ae60;">📁 파일 첨부</label><input type="file" id="inputDocFile" style="background: white; border-color: #27ae60; width: 100%;"></div>
+                
                 <button class="action-btn" id="btnSaveQms" onclick="addQmsDocument()">문서/양식 등록</button>
             </div>
         </div>
@@ -381,7 +383,8 @@
             <div class="card-header" style="color:#27ae60; font-size: 1.1em; border-bottom: 2px solid #2ecc71; padding-bottom: 8px;">📁 계측기 이력카드 종합 엑셀파일 관리</div>
             <div style="display:flex; flex-wrap:wrap; gap:15px; align-items:flex-end;">
                 <div class="control-group" style="flex:1; min-width: 300px;">
-                    <label>종합 엑셀파일 1개 직접 첨부 (최대 20MB 완벽 지원)</label>
+                    <!-- 🚨 이 녀석만 구글 드라이브 분할 업로드 적용 -->
+                    <label>종합 엑셀파일 1개 직접 첨부 (최대 20MB 완벽 지원 - 분할 처리)</label>
                     <input type="file" id="masterInstFile" accept=".xlsx, .xls" style="background: white; border-color: #27ae60; width: 100%;">
                 </div>
                 <button class="action-btn" id="btnSaveMasterInst" style="background-color: #27ae60; height: 43px;" onclick="uploadMasterInstFile()">파일 업로드 / 덮어쓰기</button>
@@ -409,7 +412,10 @@
                 <div class="control-group"><label>최근검교정일</label><input type="date" id="inputInstLastCal"></div>
                 <div class="control-group"><label>검교정예정일 <span style="font-size:11px; color:#c0392b;">(자동계산)</span></label><input type="date" id="inputInstNextCal" readonly style="background-color: #e9ecef;"></div>
                 <div class="control-group" style="flex:1;"><label>특이사항</label><input type="text" id="inputInstRemark" style="width:100%;"></div>
-                <div class="control-group" style="flex:1;"><label style="color:#27ae60;">📁 단품 성적서 직접 첨부 (최대 20MB)</label><input type="file" id="inputInstFile" style="background: white; border-color: #27ae60; width: 100%;"></div>
+                
+                <!-- 🚨 일반 탭은 직접 파일 텍스트 임베딩으로 처리되도록 원래대로 되돌렸습니다. -->
+                <div class="control-group" style="flex:1;"><label style="color:#27ae60;">📁 단품 성적서 직접 첨부</label><input type="file" id="inputInstFile" style="background: white; border-color: #27ae60; width: 100%;"></div>
+                
                 <button class="action-btn" id="btnSaveInst" onclick="addInstrument()">계측기 등록</button>
             </div>
         </div>
@@ -427,7 +433,7 @@
 </div>
 
 <script>
-    // 🚨 [필수입력] 위 1단계에서 새로 배포한 웹앱 URL을 꽂아주세요! 🚨
+    // 🚨 [필수입력] 웹앱 URL을 입력해 주세요! 🚨
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxAmM1xlV1KtR2H3joZv2ZuiONLMwGIaGvZ1wNOXVEZFGykxkn1gbBTEirHsJiaQ4cz/exec";
 
     window.fileDataStore = {};
@@ -443,24 +449,10 @@
     };
 
     async function fetchFromSheet(sheetName) { try { const response = await fetch(`${GAS_API_URL}?sheetName=${sheetName}`); return await response.json(); } catch (error) { return []; } }
-    
-    // 🚨 에러 발생 시 명확하게 팝업으로 알려주도록 로직 강화
-    async function sendToSheetRaw(payload) { 
-        try {
-            const res = await fetch(GAS_API_URL, { redirect: 'follow', method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) }); 
-            return await res.json(); 
-        } catch (err) {
-            alert(`서버 통신 에러가 발생했습니다. 웹앱 URL이 올바른지 확인해주세요!\n(상세: ${err.message})`);
-            throw err;
-        }
-    }
-    
-    async function sendToSheet(sheetName, action, data = null, id = null) { 
-        const res = await sendToSheetRaw({ sheetName, action, data, id }); 
-        if(res.status === 'error') throw new Error(res.message || "Unknown error"); 
-        return res; 
-    }
+    async function sendToSheetRaw(payload) { const res = await fetch(GAS_API_URL, { redirect: 'follow', method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) }); return await res.json(); }
+    async function sendToSheet(sheetName, action, data = null, id = null) { const res = await sendToSheetRaw({ sheetName, action, data, id }); if(res.status === 'error') throw new Error(res.message || "Unknown error"); return res; }
 
+    // 🚨 종합 엑셀파일용 분할 업로드
     async function uploadLargeFile(file, sheetName, finalAction, recordData, btnElement) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -510,14 +502,13 @@
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(tabName).classList.add('active'); btnElement.classList.add('active');
         
-        // 🚨 인쇄 시 선택된 탭 이름만 큼지막하게 출력되도록 로직 적용
         document.getElementById('main-dashboard-title').innerHTML = `<span class="no-print">📊 제조 품질 통합 대시보드 </span><span class="print-title-text"> ${btnElement.innerText}</span>`;
         
         setTimeout(() => { if(tabName === 'fourMTab') render4MTable(); if(tabName === 'customerTab') render8DList(); if(tabName === 'qmsTab') renderQmsDocTable(); if(tabName === 'instTab') renderInstTable(); }, 50);
     }
 
     // ==========================================
-    // ⭐ 1. Cg/Cgk 로직
+    // 1. Cg/Cgk 로직
     // ==========================================
     let cgkData = {}; let cgkConfig = {}; let cgkRunCharts = {}; let cgkHistCharts = {};
     document.getElementById('excelFileCgk').addEventListener('change', function(e) {
@@ -587,7 +578,7 @@
     async function generateAIReportCgk() {}
 
     // ==========================================
-    // ⭐ 2. CPK 탭 로직 
+    // 2. CPK 탭 로직 
     // ==========================================
     let cpkCategories = {}; let cpkRenderTimer = null; 
     const cpkControlConstants = { 2: { d2: 1.128, A2: 1.880, D3: 0, D4: 3.267, E2: 2.660 }, 3: { d2: 1.693, A2: 1.023, D3: 0, D4: 2.574 }, 4: { d2: 2.059, A2: 0.729, D3: 0, D4: 2.282 }, 5: { d2: 2.326, A2: 0.577, D3: 0, D4: 2.114 }, 6: { d2: 2.534, A2: 0.483, D3: 0, D4: 2.004 }, 7: { d2: 2.704, A2: 0.419, D3: 0.076, D4: 1.924 }, 8: { d2: 2.847, A2: 0.373, D3: 0.136, D4: 1.864 }, 9: { d2: 2.970, A2: 0.337, D3: 0.184, D4: 1.816 }, 10: { d2: 3.078, A2: 0.308, D3: 0.223, D4: 1.777 } };
@@ -735,7 +726,7 @@
     async function generateAIReportCpk() {}
 
     // ==========================================
-    // ⭐ 3. Gage R&R 로직 
+    // ⭐ 3. Gage R&R 로직
     // ==========================================
     let grrChartBarInst = null; let grrChartLineInst = null; let grrRawDataCache = null; 
     
@@ -847,7 +838,6 @@
         grrChartLineInst = new Chart(document.getElementById('grrChartLine'), { type: 'line', data: { labels: parts, datasets: datasetsLine }, options: { responsive: true, maintainAspectRatio: false, plugins: { title: {display:true, text:'작업자별 부품 평균 (Appraiser by Part)'} }, scales: {y: {title: {display:true, text:'Average Measurement'}}} } });
     }
     async function generateAIReportGrr() {}
-
 
     // ==========================================
     // ⭐ 4. 협력사 검사 로직 
@@ -1062,7 +1052,7 @@
     function delete8D(id) { requireAuth(async () => { if(confirm("삭제하시겠습니까?")) { eightDData = eightDData.filter(d => String(d.id) !== String(id)); render8DList(); await sendToSheet('8D', 'delete', null, id); } }, "삭제"); }
 
     // ==========================================
-    // ⭐ 7. QMS 양식 관리 로직 (분할 업로드)
+    // ⭐ 7. QMS 양식 관리 로직 (다시 원래대로 복구)
     // ==========================================
     let qmsDocData = [];
     async function initQmsTab() { document.getElementById('qmsDocTableBody').innerHTML = '<tr><td colspan="8" style="padding: 20px;">데이터를 불러오는 중입니다...</td></tr>'; qmsDocData = await fetchFromSheet('QMS'); renderQmsDocTable(); }
@@ -1105,25 +1095,34 @@
             btn.innerText = "처리 중..."; btn.disabled = true;
             const newDoc = { id: Date.now().toString(), type, docNo, name, rev, date, reason };
 
-            try {
-                if (fileInput.files.length > 0) {
-                    const file = fileInput.files[0]; 
-                    if(file.size > 20 * 1024 * 1024) throw new Error("파일이 20MB를 초과합니다.");
-                    await uploadLargeFile(file, 'QMS', 'insert_chunked', newDoc, btn);
-                } else { await sendToSheet('QMS', 'insert', newDoc); }
-                
-                qmsDocData = await fetchFromSheet('QMS');
-                document.getElementById('inputDocNo').value=''; document.getElementById('inputDocName').value=''; document.getElementById('inputDocRev').value='0'; document.getElementById('inputDocDate').value=''; document.getElementById('inputDocReason').value=''; fileInput.value='';
-                renderQmsDocTable(); alert("등록 완료.");
-            } catch(e) { alert("업로드 실패: " + e.message); } 
-            finally { btn.innerText = "문서/양식 등록"; btn.disabled = false; }
+            const saveRecord = async () => {
+                try {
+                    await sendToSheet('QMS', 'insert', newDoc);
+                    qmsDocData = await fetchFromSheet('QMS');
+                    document.getElementById('inputDocNo').value=''; document.getElementById('inputDocName').value=''; document.getElementById('inputDocRev').value='0'; document.getElementById('inputDocDate').value=''; document.getElementById('inputDocReason').value=''; fileInput.value='';
+                    renderQmsDocTable(); alert("등록 완료.");
+                } catch(e) { alert("업로드 실패: " + e.message); } 
+                finally { btn.innerText = "문서/양식 등록"; btn.disabled = false; }
+            };
+
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0]; 
+                if(file.size > 10 * 1024 * 1024) { btn.innerText = "문서/양식 등록"; btn.disabled = false; return alert("직접 등록 방식은 10MB 이하만 지원됩니다."); }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    newDoc.fileData = e.target.result;
+                    newDoc.fileName = file.name;
+                    saveRecord();
+                };
+                reader.readAsDataURL(file);
+            } else { saveRecord(); }
         }, "QMS 양식/문서 등록");
     }
 
     function deleteQmsDocument(id) { requireAuth(async () => { if(confirm("삭제하시겠습니까?")) { qmsDocData = qmsDocData.filter(d => String(d.id) !== String(id)); renderQmsDocTable(); await sendToSheet('QMS', 'delete', null, id); } }, "삭제"); }
 
     // ==========================================
-    // ⭐ 8. 계측기 관리 로직 (분할 업로드)
+    // ⭐ 8. 계측기 관리 로직 
     // ==========================================
     let instData = [];
     let masterInstFileRec = null;
@@ -1174,19 +1173,27 @@
             btn.innerText = "저장 중..."; btn.disabled = true;
             const newInst = { id: Date.now().toString(), instCode, name, spec, instNo, purchase, qty, cycle, lastCal, nextCal, remark };
 
-            try {
-                if (fileInput.files.length > 0) {
-                    const file = fileInput.files[0]; 
-                    if(file.size > 20 * 1024 * 1024) throw new Error("최대 20MB 이하만 가능합니다.");
-                    await uploadLargeFile(file, 'Instrument', 'insert_chunked', newInst, btn);
-                } else { await sendToSheet('Instrument', 'insert', newInst); }
-                
-                instData = await fetchFromSheet('Instrument');
-                
-                document.getElementById('inputInstCode').value = ''; document.getElementById('inputInstName').value = ''; document.getElementById('inputInstSpec').value = ''; document.getElementById('inputInstNo').value = ''; document.getElementById('inputInstPurchase').value = ''; document.getElementById('inputInstQty').value = '1'; document.getElementById('inputInstCycle').value = '12'; document.getElementById('inputInstLastCal').value = ''; document.getElementById('inputInstNextCal').value = ''; document.getElementById('inputInstRemark').value = ''; fileInput.value = '';
-                renderInstTable(); alert("계측기 등록 완료.");
-            } catch(e) { alert("등록 실패: " + e.message); } 
-            finally { btn.innerText = "계측기 등록"; btn.disabled = false; }
+            const saveInstRecord = async () => {
+                try {
+                    await sendToSheet('Instrument', 'insert', newInst);
+                    instData = await fetchFromSheet('Instrument');
+                    document.getElementById('inputInstCode').value = ''; document.getElementById('inputInstName').value = ''; document.getElementById('inputInstSpec').value = ''; document.getElementById('inputInstNo').value = ''; document.getElementById('inputInstPurchase').value = ''; document.getElementById('inputInstQty').value = '1'; document.getElementById('inputInstCycle').value = '12'; document.getElementById('inputInstLastCal').value = ''; document.getElementById('inputInstNextCal').value = ''; document.getElementById('inputInstRemark').value = ''; fileInput.value = '';
+                    renderInstTable(); alert("계측기 등록 완료.");
+                } catch(e) { alert("등록 실패: " + e.message); } 
+                finally { btn.innerText = "계측기 등록"; btn.disabled = false; }
+            };
+
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0]; 
+                if(file.size > 10 * 1024 * 1024) { btn.innerText = "계측기 등록"; btn.disabled = false; return alert("직접 등록 방식은 10MB 이하만 지원됩니다."); }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    newInst.fileData = e.target.result;
+                    newInst.fileName = file.name;
+                    saveInstRecord();
+                };
+                reader.readAsDataURL(file);
+            } else { saveInstRecord(); }
         }, "계측기 등록");
     }
 
@@ -1207,7 +1214,7 @@
                 window.fileDataStore['master'] = href;
                 masterContainer.innerHTML = `<button onclick="downloadBase64File('master', '${name}')" class="download-btn" style="padding: 10px 20px; font-size: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">⬇️ ${name} 다운로드</button>`; 
             }
-        } else { masterContainer.innerHTML = `<span style="color: #7f8c8d; font-weight: normal;">등록된 엑셀파일이 없습니다.</span>`; }
+        } else { masterContainer.innerHTML = `<span style="color: #7f8c8d; font-weight: normal;">등록된 종합 엑셀파일이 없습니다.</span>`; }
 
         const filterYear = document.getElementById('filterYearInst').value; const filterName = document.getElementById('filterNameInst').value; const filterStatus = document.getElementById('filterStatusInst').value;
         
