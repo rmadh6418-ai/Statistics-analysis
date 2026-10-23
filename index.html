@@ -313,7 +313,6 @@
 
         <div id="view8DList">
             <div class="table-container">
-                <!-- 🚨 리스트 테이블 헤더에 'NCR 접수일자' 추가 완료 -->
                 <table class="ng-table">
                     <thead><tr><th style="width:12%;">NCR 접수일자</th><th style="width:12%;">발행 일자</th><th style="width:8%;">연도</th><th style="width:15%;">프로젝트명</th><th style="width:15%;">고객사</th><th style="width:23%;">불량 현상</th><th style="width:15%;">관리</th></tr></thead>
                     <tbody id="tableBody8D"></tbody>
@@ -329,7 +328,6 @@
                 <div class="a4-paper">
                     <h2 class="print-title" style="text-align: center; margin-bottom: 25px; font-size: 28px; letter-spacing: 2px;">8D Report (시정 및 예방 조치서)</h2>
                     <input type="hidden" id="8d_id">
-                    <!-- 🚨 A4 폼 안에 'NCR 접수일자' 필드 레이아웃 추가 완료 -->
                     <table class="report-table">
                         <tr>
                             <th style="width:18%">NCR 접수일자</th><td style="width:32%"><input type="date" id="8d_ncr_date" class="borderless-input"></td>
@@ -380,7 +378,6 @@
         </div>
         <h3 style="margin-top: 10px; color: #2c3e50; font-size: 20px;">📋 문서/양식 이력 목록</h3>
         
-        <!-- ✨ QMS Pie Chart 추가 -->
         <div class="chart-row" style="justify-content: center; margin-bottom: 20px;">
             <div class="chart-box" style="height: 350px; max-width: 500px; width: 100%;">
                 <canvas id="qmsPieChart"></canvas>
@@ -1287,22 +1284,33 @@
         filtered = filtered.map(d => {
             let remainDays = null; let formattedNext = formatDateSafe(d.nextCal);
             if(formattedNext !== '-') { let nextDate = new Date(formattedNext); let diffTime = nextDate - today; remainDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); }
-            return { ...d, remainDays };
+            
+            // ✨ 장기 미사용 여부 확인 로직 추가
+            let isLongTermUnused = d.remark && String(d.remark).replace(/\s/g, '').includes('장기미사용');
+            return { ...d, remainDays, isLongTermUnused };
         });
 
-        if (filterStatus === 'WARNING') filtered = filtered.filter(d => d.remainDays !== null && d.remainDays >= 0 && d.remainDays <= 30);
-        else if (filterStatus === 'EXPIRED') filtered = filtered.filter(d => d.remainDays !== null && d.remainDays < 0);
+        // ✨ 장기 미사용일 경우 교정 지연/임박 필터에서 제외되도록 처리
+        if (filterStatus === 'WARNING') {
+            filtered = filtered.filter(d => d.remainDays !== null && d.remainDays >= 0 && d.remainDays <= 30 && !d.isLongTermUnused);
+        } else if (filterStatus === 'EXPIRED') {
+            filtered = filtered.filter(d => d.remainDays !== null && d.remainDays < 0 && !d.isLongTermUnused);
+        }
 
         if (filtered.length === 0) return tbody.innerHTML = `<tr><td colspan="13" style="padding: 20px;">조건에 맞는 계측기 데이터가 없습니다.</td></tr>`;
 
-        // ✨ 수정된 부분: 검교정 예정일 대신 '관리번호(instCode)'를 기준으로 오름차순(자연스러운 숫자 포함 정렬) 적용
         filtered.sort((a, b) => {
             let codeA = a.instCode ? String(a.instCode).trim() : '';
             let codeB = b.instCode ? String(b.instCode).trim() : '';
             return codeA.localeCompare(codeB, undefined, { numeric: true, sensitivity: 'base' });
         }).forEach(d => {
             let tr = document.createElement('tr'); let remainHtml = '-'; let dateStyle = 'color: #333;';
-            if (d.remainDays !== null) {
+            
+            // ✨ 장기 미사용일 경우 깔끔한 회색 뱃지 처리 및 날짜 흐리게(취소선) 표시
+            if (d.isLongTermUnused) {
+                remainHtml = `<span style="background-color: #f1f3f5; color: #868e96; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; border: 1px solid #dee2e6;">미사용</span>`;
+                dateStyle = 'color: #adb5bd; text-decoration: line-through;';
+            } else if (d.remainDays !== null) {
                 if (d.remainDays < 0) { remainHtml = `초과 (${Math.abs(d.remainDays)}일)`; dateStyle = 'color: #c0392b; font-weight: 900; background-color: #fde8e8;'; } 
                 else if (d.remainDays <= 30) { remainHtml = `${d.remainDays}일`; dateStyle = 'color: #d35400; font-weight: bold; background-color: #fef0f0;'; } 
                 else { remainHtml = `${d.remainDays}일`; dateStyle = 'color: #27ae60; font-weight: bold;'; }
