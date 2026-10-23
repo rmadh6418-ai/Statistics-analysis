@@ -59,7 +59,8 @@
         .chart-row { display: flex; gap: 25px; margin-bottom: 25px; flex-wrap: wrap; width: 100%;}
         .chart-box { flex: 1; min-width: 450px; background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; position: relative; box-sizing: border-box; overflow: hidden; }
         .js-plotly-plot { max-width: 100%; } 
-        .table-container { max-height: 600px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 8px; }
+        /* 변경된 부분: 전체가 보이도록 max-height 제한 해제 */
+        .table-container { max-height: none; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 8px; }
         .ng-table { width: 100%; border-collapse: collapse; font-size: 15px; text-align: center; }
         .ng-table th { background: #343a40; color: white; padding: 12px; position: sticky; top: 0; z-index: 1; font-weight: bold; }
         .ng-table td { border-bottom: 1px solid #dee2e6; padding: 12px; font-weight: bold; vertical-align: middle; }
@@ -145,7 +146,6 @@
         <button class="tab-btn active" onclick="openTab('cgkTab', this)">MSA Cg/Cgk</button>
         <button class="tab-btn" onclick="openTab('cpkTab', this)">CPK / PPK</button>
         <button class="tab-btn" onclick="openTab('grrTab', this)">Gage R&R 분석</button>
-        <!-- 🚨 탭 이름 변경 적용: 협력사 수입검사 / 고객사 8D Report -->
         <button class="tab-btn" onclick="openTab('supplierTab', this)">협력사 수입검사</button>
         <button class="tab-btn" onclick="openTab('fourMTab', this)">4M 변경관리</button>
         <button class="tab-btn" onclick="openTab('customerTab', this)">고객사 8D Report</button>
@@ -379,6 +379,14 @@
             </div>
         </div>
         <h3 style="margin-top: 10px; color: #2c3e50; font-size: 20px;">📋 문서/양식 이력 목록</h3>
+        
+        <!-- ✨ QMS Pie Chart 추가 -->
+        <div class="chart-row" style="justify-content: center; margin-bottom: 20px;">
+            <div class="chart-box" style="height: 350px; max-width: 500px; width: 100%;">
+                <canvas id="qmsPieChart"></canvas>
+            </div>
+        </div>
+
         <div class="table-container">
             <table class="ng-table">
                 <thead><tr><th style="width:10%;">구분</th><th style="width:12%;">문서/양식 번호</th><th style="width:22%;">문서/양식명</th><th style="width:6%;">Rev.</th><th style="width:12%;">시행 일자</th><th style="width:23%;">제/개정 사유</th><th style="width:10%;">첨부파일</th><th style="width:5%;">관리</th></tr></thead>
@@ -1068,7 +1076,7 @@
     function delete8D(id) { requireAuth(async () => { if(confirm("삭제하시겠습니까?")) { eightDData = eightDData.filter(d => String(d.id) !== String(id)); render8DList(); await sendToSheet('8D', 'delete', null, id); } }, "삭제"); }
 
     // ==========================================
-    // ⭐ 7. QMS 양식 관리 로직 (다시 원래대로 복구)
+    // ⭐ 7. QMS 양식 관리 로직 (Pie Chart 추가)
     // ==========================================
     let qmsDocData = [];
     async function initQmsTab() { document.getElementById('qmsDocTableBody').innerHTML = '<tr><td colspan="8" style="padding: 20px;">데이터를 불러오는 중입니다...</td></tr>'; qmsDocData = await fetchFromSheet('QMS'); renderQmsDocTable(); }
@@ -1084,22 +1092,50 @@
         if (filterLatest === 'LATEST') { let latestMap = {}; filtered.forEach(d => { if (!latestMap[d.docNo] || parseInt(d.rev) > parseInt(latestMap[d.docNo].rev)) { latestMap[d.docNo] = d; } }); filtered = Object.values(latestMap); }
 
         const tbody = document.getElementById('qmsDocTableBody'); tbody.innerHTML = '';
-        if (filtered.length === 0) return tbody.innerHTML = `<tr><td colspan="8" style="padding: 20px;">등록된 표준문서가 없습니다.</td></tr>`;
+        if (filtered.length === 0) { 
+            tbody.innerHTML = `<tr><td colspan="8" style="padding: 20px;">등록된 표준문서가 없습니다.</td></tr>`;
+        } else {
+            filtered.sort((a,b) => new Date(formatDateSafe(b.date)) - new Date(formatDateSafe(a.date))).forEach(d => {
+                let tr = document.createElement('tr'); let typeColor = '#2c3e50';
+                if(d.type === '품질양식') typeColor = '#27ae60'; else if(d.type === '품질매뉴얼') typeColor = '#c0392b'; else if(d.type === '품질절차서') typeColor = '#2980b9'; else if(d.type === '품질지침서') typeColor = '#8e44ad';
 
-        filtered.sort((a,b) => new Date(formatDateSafe(b.date)) - new Date(formatDateSafe(a.date))).forEach(d => {
-            let tr = document.createElement('tr'); let typeColor = '#2c3e50';
-            if(d.type === '품질양식') typeColor = '#27ae60'; else if(d.type === '품질매뉴얼') typeColor = '#c0392b'; else if(d.type === '품질절차서') typeColor = '#2980b9'; else if(d.type === '품질지침서') typeColor = '#8e44ad';
+                let fileHTML = `<span style="color:#bdc3c7; font-size:13px;">첨부 없음</span>`;
+                if (d.fileData) {
+                    if (d.fileData.startsWith('http')) { fileHTML = `<a href="${d.fileData}" target="_blank" class="download-btn">🔗 다운로드</a>`; } 
+                    else if (d.fileData.startsWith('data:')) {
+                        const dataId = 'qms_' + d.id; window.fileDataStore[dataId] = d.fileData;
+                        fileHTML = `<button onclick="downloadBase64File('${dataId}', '${d.fileName}')" class="download-btn">⬇️ 다운로드</button>`;
+                    }
+                }
+                tr.innerHTML = `<td style="color: ${typeColor}; font-weight: 900;">${d.type}</td><td style="font-weight: bold;">${d.docNo}</td><td style="font-weight: bold; text-align: left;">${d.name}</td><td>Rev. ${d.rev}</td><td>${formatDateSafe(d.date)}</td><td style="text-align: left; color: #495057;">${d.reason}</td><td>${fileHTML}</td><td><button class="delete-btn no-print" onclick="deleteQmsDocument('${d.id}')">삭제</button></td>`;
+                tbody.appendChild(tr);
+            });
+        }
 
-            let fileHTML = `<span style="color:#bdc3c7; font-size:13px;">첨부 없음</span>`;
-            if (d.fileData) {
-                if (d.fileData.startsWith('http')) { fileHTML = `<a href="${d.fileData}" target="_blank" class="download-btn">🔗 다운로드</a>`; } 
-                else if (d.fileData.startsWith('data:')) {
-                    const dataId = 'qms_' + d.id; window.fileDataStore[dataId] = d.fileData;
-                    fileHTML = `<button onclick="downloadBase64File('${dataId}', '${d.fileName}')" class="download-btn">⬇️ 다운로드</button>`;
+        // QMS Pie Chart 추가 로직
+        let typeCounts = {};
+        filtered.forEach(d => { typeCounts[d.type] = (typeCounts[d.type] || 0) + 1; });
+        const chartLabels = Object.keys(typeCounts);
+        const chartData = Object.values(typeCounts);
+
+        if (window.qmsPieChartInst) window.qmsPieChartInst.destroy();
+        const ctxQms = document.getElementById('qmsPieChart').getContext('2d');
+        window.qmsPieChartInst = new Chart(ctxQms, {
+            type: 'pie',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    data: chartData,
+                    backgroundColor: ['#27ae60', '#c0392b', '#2980b9', '#8e44ad', '#f1c40f', '#e67e22']
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: '문서 구분별 현황', font: { size: 16 } },
+                    datalabels: { display: true, color: '#fff', font: { weight: 'bold', size: 13 }, formatter: (v) => v + '개' }
                 }
             }
-            tr.innerHTML = `<td style="color: ${typeColor}; font-weight: 900;">${d.type}</td><td style="font-weight: bold;">${d.docNo}</td><td style="font-weight: bold; text-align: left;">${d.name}</td><td>Rev. ${d.rev}</td><td>${formatDateSafe(d.date)}</td><td style="text-align: left; color: #495057;">${d.reason}</td><td>${fileHTML}</td><td><button class="delete-btn no-print" onclick="deleteQmsDocument('${d.id}')">삭제</button></td>`;
-            tbody.appendChild(tr);
         });
     }
 
