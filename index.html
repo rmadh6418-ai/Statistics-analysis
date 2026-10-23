@@ -1295,7 +1295,12 @@
 
         if (filtered.length === 0) return tbody.innerHTML = `<tr><td colspan="13" style="padding: 20px;">조건에 맞는 계측기 데이터가 없습니다.</td></tr>`;
 
-        filtered.sort((a,b) => new Date(formatDateSafe(a.nextCal) || '2099-01-01') - new Date(formatDateSafe(b.nextCal) || '2099-01-01')).forEach(d => {
+        // ✨ 수정된 부분: 검교정 예정일 대신 '관리번호(instCode)'를 기준으로 오름차순(자연스러운 숫자 포함 정렬) 적용
+        filtered.sort((a, b) => {
+            let codeA = a.instCode ? String(a.instCode).trim() : '';
+            let codeB = b.instCode ? String(b.instCode).trim() : '';
+            return codeA.localeCompare(codeB, undefined, { numeric: true, sensitivity: 'base' });
+        }).forEach(d => {
             let tr = document.createElement('tr'); let remainHtml = '-'; let dateStyle = 'color: #333;';
             if (d.remainDays !== null) {
                 if (d.remainDays < 0) { remainHtml = `초과 (${Math.abs(d.remainDays)}일)`; dateStyle = 'color: #c0392b; font-weight: 900; background-color: #fde8e8;'; } 
