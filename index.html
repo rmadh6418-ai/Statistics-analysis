@@ -40,7 +40,6 @@
         button.delete-btn { background-color: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
         button.delete-btn:hover { background-color: #c0392b; }
         
-        /* ✨ 수정/삭제 버튼 가로 정렬 및 크기 통일 스타일 */
         .action-buttons { display: flex; flex-wrap: nowrap; gap: 5px; justify-content: center; align-items: center; }
         .action-buttons button { flex: 1; padding: 6px 2px !important; font-size: 12px !important; font-weight: bold; text-align: center; min-width: 44px; margin: 0 !important; }
         
@@ -161,8 +160,9 @@
     <!-- 1. Cg/Cgk 탭 -->
     <div id="cgkTab" class="tab-content active">
         <div class="controls">
-            <div class="control-group"><label>엑셀 데이터 업로드 (.xlsx)</label><input type="file" id="excelFileCgk" accept=".xlsx, .xls, .csv" /></div>
-            <div class="control-group hidden" id="controlsCgk"><label>보기 옵션</label><select id="viewSelectCgk" onchange="toggleViewCgk()"></select></div>
+            <!-- 한/영 변경 -->
+            <div class="control-group"><label>데이터 업로드 (Upload Data .xlsx)</label><input type="file" id="excelFileCgk" accept=".xlsx, .xls, .csv" /></div>
+            <div class="control-group hidden" id="controlsCgk"><label>보기 옵션 (View Option)</label><select id="viewSelectCgk" onchange="toggleViewCgk()"></select></div>
         </div>
         <div class="controls ai-controls hidden" id="aiControlsGroupCgk">
             <div class="control-group" style="flex: 1;"><label style="color: #1565c0;">🔑 Gemini API 키</label><input type="password" id="geminiApiKeyCgk" placeholder="API Key 입력"></div>
@@ -170,7 +170,8 @@
         </div>
         <div id="aiReportAreaCgk" class="ai-report-area hidden"><div class="ai-header-bar" onclick="toggleAiReport('aiReportContentCgk', 'iconCgk')"><h3>💡 AI 리포트</h3><span id="iconCgk" class="ai-toggle-icon">▼</span></div><div id="aiReportContentCgk" class="ai-report-content"></div></div>
         <div class="hidden" id="summarySectionCgk" style="overflow-x: auto;">
-            <table class="summary-table"><thead><tr><th>데이터셋</th><th>N</th><th>Ref</th><th>USL / LSL</th><th>Mean</th><th>StdDev</th><th>Cg</th><th>Cgk</th><th>판정</th></tr></thead><tbody id="summaryTableBodyCgk"></tbody></table>
+            <!-- 한/영 변경 -->
+            <table class="summary-table"><thead><tr><th>데이터셋 (Dataset)</th><th>N</th><th>Ref</th><th>USL / LSL</th><th>Mean</th><th>StdDev</th><th>Cg</th><th>Cgk</th><th>판정 (Result)</th></tr></thead><tbody id="summaryTableBodyCgk"></tbody></table>
         </div>
         <div id="detailDashboardCgk"></div>
     </div>
@@ -178,12 +179,13 @@
     <!-- 2. CPK 탭 -->
     <div id="cpkTab" class="tab-content">
         <div class="controls">
-            <div class="control-group"><label>엑셀 업로드 (.xlsx)</label><input type="file" id="excelFileCpk" accept=".xlsx, .xls"></div>
-            <div class="control-group"><label>분석 그룹</label><select id="categorySelectCpk" disabled><option>대기 중...</option></select></div>
-            <div class="control-group" id="chartTypeGroupCpk"><label>관리도 유형</label><select id="chartTypeSelectCpk"><option value="Xbar-R">Xbar-R Chart</option><option value="I-MR">I-MR Chart</option></select></div>
-            <div class="control-group"><label>LSL (하한)</label><input type="number" id="lslCpk" step="0.001" value="20.9"></div>
-            <div class="control-group"><label>USL (상한)</label><input type="number" id="uslCpk" step="0.001" value="21.0"></div>
-            <div class="control-group" id="subgroupSizeGroupCpk"><label>부분군 크기(n)</label><input type="number" id="subgroupSizeCpk" min="2" max="10" value="5"></div>
+            <!-- 한/영 변경 -->
+            <div class="control-group"><label>데이터 업로드 (Upload .xlsx)</label><input type="file" id="excelFileCpk" accept=".xlsx, .xls"></div>
+            <div class="control-group"><label>분석 그룹 (Group)</label><select id="categorySelectCpk" disabled><option>대기 중... (Waiting)</option></select></div>
+            <div class="control-group" id="chartTypeGroupCpk"><label>관리도 (Chart Type)</label><select id="chartTypeSelectCpk"><option value="Xbar-R">Xbar-R Chart</option><option value="I-MR">I-MR Chart</option></select></div>
+            <div class="control-group"><label>하한 (LSL)</label><input type="number" id="lslCpk" step="0.001" value="20.9"></div>
+            <div class="control-group"><label>상한 (USL)</label><input type="number" id="uslCpk" step="0.001" value="21.0"></div>
+            <div class="control-group" id="subgroupSizeGroupCpk"><label>부분군 (Subgroup n)</label><input type="number" id="subgroupSizeCpk" min="2" max="10" value="5"></div>
         </div>
         <div class="controls ai-controls" id="aiControlsGroupCpk">
             <div class="control-group" style="flex: 1;"><label style="color: #1565c0;">🔑 Gemini API 키</label><input type="password" id="geminiApiKeyCpk" placeholder="API Key 입력"></div>
@@ -191,7 +193,8 @@
         </div>
         <div id="singleCategoryViewCpk">
             <div class="metrics-grid">
-                <div class="metric-card"><h3>평균</h3><p id="txt-mean-cpk">-</p></div><div class="metric-card"><h3>표준편차</h3><p id="txt-std-lt-cpk">-</p></div>
+                <!-- 한/영 변경 -->
+                <div class="metric-card"><h3>평균 (Mean)</h3><p id="txt-mean-cpk">-</p></div><div class="metric-card"><h3>표준편차 (StDev)</h3><p id="txt-std-lt-cpk">-</p></div>
                 <div class="metric-card highlight"><h3>Pp</h3><p id="txt-pp-cpk">-</p></div><div class="metric-card highlight"><h3>Ppk</h3><p id="txt-ppk-cpk">-</p></div>
                 <div class="metric-card highlight"><h3>Cp</h3><p id="txt-cp-cpk">-</p></div><div class="metric-card highlight"><h3>Cpk</h3><p id="txt-cpk-cpk">-</p></div>
             </div>
@@ -212,10 +215,11 @@
     <!-- 3. Gage R&R 탭 -->
     <div id="grrTab" class="tab-content">
         <div class="controls" style="background:#f4fce3; border:1px solid #c0eb75;">
-            <div class="control-group"><label>Gage R&R 측정 데이터 (.xlsx)</label><input type="file" id="excelFileGrr" accept=".xlsx, .xls, .csv" /></div>
-            <div class="control-group"><label>도면 공차 (Tolerance)</label><input type="number" id="toleranceGrr" placeholder="빈칸 시 %TV 분석만 진행" style="min-width: 200px;"></div>
-            <div class="control-group" style="justify-content: flex-end;"><button class="action-btn" onclick="recalcGrr()" style="background-color:#2b8a3e;">다시 계산하기</button></div>
-            <div class="control-group" style="margin-left:auto; justify-content:center;"><a href="#" onclick="downloadGrrTemplate()" style="color:#2b8a3e; text-decoration:underline; font-size:15px; font-weight:900;">📄 측정 표준 양식 다운로드 (3x10x3)</a></div>
+            <!-- 한/영 변경 -->
+            <div class="control-group"><label>측정 데이터 (Measurement Data .xlsx)</label><input type="file" id="excelFileGrr" accept=".xlsx, .xls, .csv" /></div>
+            <div class="control-group"><label>도면 공차 (Tolerance)</label><input type="number" id="toleranceGrr" placeholder="미입력 시 %TV 분석 (Optional)" style="min-width: 200px;"></div>
+            <div class="control-group" style="justify-content: flex-end;"><button class="action-btn" onclick="recalcGrr()" style="background-color:#2b8a3e;">다시 계산 (Recalculate)</button></div>
+            <div class="control-group" style="margin-left:auto; justify-content:center;"><a href="#" onclick="downloadGrrTemplate()" style="color:#2b8a3e; text-decoration:underline; font-size:15px; font-weight:900;">📄 측정 양식 다운로드 (Download Template)</a></div>
         </div>
         
         <div class="controls ai-controls" id="aiControlsGroupGrr">
@@ -227,12 +231,13 @@
         </div>
 
         <div class="metrics-grid">
+            <!-- 한/영 변경 -->
             <div class="metric-card" id="card-grr-tv"><h3>총 변동 (Total Var)</h3><p id="txt-grr-tv">-</p><span class="sub-text">TV = 6 * Sigma_TV</span></div>
             <div class="metric-card" id="card-grr-grr-tv"><h3>%GR&R (%Study Var)</h3><p id="txt-grr-percent-tv">-</p><span class="sub-text">총 변동(TV) 기준 오차율</span></div>
             <div class="metric-card" id="card-grr-grr-tol" style="border: 2px solid #8e44ad; background: #f3e5f5;"><h3 style="color:#8e44ad;">%Tolerance (P/T Ratio)</h3><p id="txt-grr-percent-tol" style="color:#8e44ad;">-</p><span class="sub-text">도면 공차 기준 오차율</span></div>
-            <div class="metric-card" id="card-grr-ev"><h3>%EV (반복성/계측기)</h3><p id="txt-grr-ev">-</p><span class="sub-text" id="sub-ev-base">기준: -</span></div>
-            <div class="metric-card" id="card-grr-av"><h3>%AV (재현성/작업자)</h3><p id="txt-grr-av">-</p><span class="sub-text" id="sub-av-base">기준: -</span></div>
-            <div class="metric-card" id="card-grr-ndc"><h3>ndc (구분범주수)</h3><p id="txt-grr-ndc">-</p><span class="sub-text">목표: 5 이상</span></div>
+            <div class="metric-card" id="card-grr-ev"><h3>%EV (반복성 / Repeatability)</h3><p id="txt-grr-ev">-</p><span class="sub-text" id="sub-ev-base">기준: -</span></div>
+            <div class="metric-card" id="card-grr-av"><h3>%AV (재현성 / Reproducibility)</h3><p id="txt-grr-av">-</p><span class="sub-text" id="sub-av-base">기준: -</span></div>
+            <div class="metric-card" id="card-grr-ndc"><h3>ndc (구분범주수 / Categories)</h3><p id="txt-grr-ndc">-</p><span class="sub-text">목표: 5 이상</span></div>
         </div>
         
         <div id="aiReportAreaGrr" class="ai-report-area hidden">
@@ -247,11 +252,12 @@
                 <div class="chart-box" style="height: 450px;"><canvas id="grrChartBar"></canvas></div>
                 <div class="chart-box" style="height: 450px;"><canvas id="grrChartLine"></canvas></div>
             </div>
-            <h3 style="margin-top: 30px; color: #2c3e50; font-size: 20px;">🚨 [판정 가이드]</h3>
+            <!-- 한/영 변경 -->
+            <h3 style="margin-top: 30px; color: #2c3e50; font-size: 20px;">🚨 [판정 가이드 / Judgment Guide]</h3>
             <p style="color: #495057; line-height: 1.6; font-weight: bold; background: white; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6;">
-                1) <b>%Study Var (공정능력 관리용)</b> : 10% 이하 (우수), 10~30% (조건부 수용), 30% 초과 (부적합)<br>
-                2) <b>%Tolerance (부품 양불 판정용)</b> : 제품 합격/불합격을 판정하는 계측기의 경우, 공차(Tolerance)를 기준으로 한 P/T Ratio가 10~30% 이내여야 합니다.<br>
-                3) <b>ndc (구분범주수)</b> : 5 이상 (적합), 5 미만 (부적합 - 계측기 분해능 부족 또는 부품 산포가 너무 작음)
+                1) <b>%Study Var (공정능력 관리 / Process Control)</b> : 10% 이하/Under (우수/Excellent), 10~30% (조건부/Marginal), 30% 초과/Over (부적합/Unacceptable)<br>
+                2) <b>%Tolerance (양불 판정 / Part Inspection)</b> : 공차(Tolerance) 기준 P/T Ratio 10~30% 이내 권장 (Recommended P/T Ratio under 30%).<br>
+                3) <b>ndc (구분범주수 / Distinct Categories)</b> : 5 이상/Over (적합/Acceptable), 5 미만/Under (부적합/Unacceptable - 분해능 부족/Low resolution).
             </p>
         </div>
     </div>
@@ -299,7 +305,6 @@
         </div>
         <div class="table-container">
             <table class="ng-table">
-                <!-- 열 너비 약간 조정: 관리 버튼 2개가 들어가므로 9% 할당 -->
                 <thead><tr><th style="width:12%;">발생 일자</th><th style="width:10%;">연도</th><th style="width:18%;">프로젝트명</th><th style="width:15%;">4M 구분</th><th style="width:36%;">변경 상세 내용</th><th style="width:9%;" class="no-print">관리</th></tr></thead>
                 <tbody id="tableBody4M"></tbody>
             </table>
@@ -400,7 +405,6 @@
 
         <div class="table-container">
             <table class="ng-table">
-                <!-- 열 너비 조정: 문서/양식명 22->19, 관리 6->9 -->
                 <thead><tr><th style="width:10%;">구분</th><th style="width:12%;">문서/양식 번호</th><th style="width:19%;">문서/양식명</th><th style="width:6%;">Rev.</th><th style="width:12%;">시행 일자</th><th style="width:23%;">제/개정 사유</th><th style="width:10%;">첨부파일</th><th style="width:9%;" class="no-print">관리</th></tr></thead>
                 <tbody id="qmsDocTableBody"></tbody>
             </table>
@@ -456,7 +460,6 @@
         <h3 style="margin-top: 10px; color: #2c3e50; font-size: 20px;">📋 계측기 및 검교정 관리 대장</h3>
         <div class="table-container">
             <table class="ng-table" style="font-size: 14px;">
-                <!-- 열 너비 조정: 특이사항 12->10, 관리 6->8 -->
                 <thead>
                     <tr><th style="width:8%;">관리번호</th><th style="width:10%;">계측기명</th><th style="width:8%;">사양</th><th style="width:8%;">기기번호</th><th style="width:6%;">구입년월</th><th style="width:4%;">수량</th><th style="width:6%;">주기(월)</th><th style="width:9%;">최근검교정일</th><th style="width:9%;">검교정예정일</th><th style="width:7%;">잔여일</th><th style="width:10%;">특이사항</th><th style="width:7%;">성적서</th><th style="width:8%;" class="no-print">관리</th></tr>
                 </thead>
@@ -544,7 +547,7 @@
     }
 
     // ==========================================
-    // 1. Cg/Cgk 로직
+    // 1. Cg/Cgk 로직 (한/영 병기 적용)
     // ==========================================
     let cgkData = {}; let cgkConfig = {}; let cgkRunCharts = {}; let cgkHistCharts = {};
     document.getElementById('excelFileCgk').addEventListener('change', function(e) {
@@ -577,14 +580,14 @@
     }
 
     function initCgkDashboard() { 
-        const select = document.getElementById('viewSelectCgk'); select.innerHTML = '<option value="all">전체 보기</option>';
+        const select = document.getElementById('viewSelectCgk'); select.innerHTML = '<option value="all">전체 보기 (View All)</option>';
         Object.keys(cgkData).forEach(key => select.innerHTML += `<option value="${key}">${key}</option>`);
         document.getElementById('controlsCgk').classList.remove('hidden'); document.getElementById('aiControlsGroupCgk').classList.remove('hidden'); document.getElementById('summarySectionCgk').classList.remove('hidden');
         const dashboard = document.getElementById('detailDashboardCgk'); dashboard.innerHTML = ''; cgkRunCharts = {}; cgkHistCharts = {};
         Object.keys(cgkData).forEach((key, index) => {
             if(cgkData[key].length === 0) return; const conf = cgkConfig[key]; const card = document.createElement('div'); card.className = 'data-card'; card.setAttribute('data-key', key);
-            card.innerHTML = `<div class="card-header">${key} 상세 분석 (Cg/Cgk)</div>
-                <div class="input-group"><label>기준값: <input type="number" id="ref_cgk_${index}" step="0.001" value="${conf.ref}"></label><label>상한(USL): <input type="number" id="usl_cgk_${index}" step="0.001" value="${conf.usl}"></label><label>하한(LSL): <input type="number" id="lsl_cgk_${index}" step="0.001" value="${conf.lsl}"></label><label>K(%) : <input type="number" id="k_cgk_${index}" step="1" value="${conf.k}"></label><button class="action-btn" onclick="updateSingleCardCgk('${key}', ${index})">계산 업데이트</button></div>
+            card.innerHTML = `<div class="card-header">${key} 상세 분석 (Detailed Analysis)</div>
+                <div class="input-group"><label>기준값 (Ref): <input type="number" id="ref_cgk_${index}" step="0.001" value="${conf.ref}"></label><label>상한 (USL): <input type="number" id="usl_cgk_${index}" step="0.001" value="${conf.usl}"></label><label>하한 (LSL): <input type="number" id="lsl_cgk_${index}" step="0.001" value="${conf.lsl}"></label><label>K(%) : <input type="number" id="k_cgk_${index}" step="1" value="${conf.k}"></label><button class="action-btn" onclick="updateSingleCardCgk('${key}', ${index})">계산 (Calculate)</button></div>
                 <div class="results" id="res_cgk_${index}"></div><div class="chart-row"><div class="chart-box" style="height:400px;"><canvas id="runChartCgk_${index}"></canvas></div><div class="chart-box" style="height:400px;"><canvas id="histChartCgk_${index}"></canvas></div></div>`;
             dashboard.appendChild(card); calculateCgkStats(key); updateCgkCardUI(key, index);
         });
@@ -600,21 +603,21 @@
 
     function updateCgkCardUI(key, index) { 
         const data = cgkData[key]; const conf = cgkConfig[key];
-        document.getElementById(`res_cgk_${index}`).innerHTML = `<span>평균: ${conf.mean.toFixed(5)}</span><span>표준편차: ${conf.stdDev.toFixed(5)}</span><span>Cg: <span class="${conf.cg >= 1.33 ? 'pass' : 'fail'}">${conf.cg.toFixed(3)}</span></span><span>Cgk: <span class="${conf.cgk >= 1.33 ? 'pass' : 'fail'}">${conf.cgk.toFixed(3)}</span></span><span class="${conf.pass ? 'pass' : 'fail'}">(${conf.pass ? '합격' : '불합격'})</span>`;
+        document.getElementById(`res_cgk_${index}`).innerHTML = `<span>평균 (Mean): ${conf.mean.toFixed(5)}</span><span>표준편차 (StDev): ${conf.stdDev.toFixed(5)}</span><span>Cg: <span class="${conf.cg >= 1.33 ? 'pass' : 'fail'}">${conf.cg.toFixed(3)}</span></span><span>Cgk: <span class="${conf.cgk >= 1.33 ? 'pass' : 'fail'}">${conf.cgk.toFixed(3)}</span></span><span class="${conf.pass ? 'pass' : 'fail'}">(${conf.pass ? '합격 (Pass)' : '불합격 (Fail)'})</span>`;
         const ctxRun = document.getElementById(`runChartCgk_${index}`).getContext('2d'); if (cgkRunCharts[index]) cgkRunCharts[index].destroy();
-        cgkRunCharts[index] = new Chart(ctxRun, { type: 'line', data: { labels: Array.from({length: conf.n}, (_, i) => i + 1), datasets: [{ label: '측정값', data: data, borderColor: '#2c3e50', backgroundColor: '#2c3e50', borderWidth: 2, fill: false, tension: 0.1, pointRadius: 3 }, { label: '상한(USL)', data: Array(conf.n).fill(conf.usl), borderColor: 'rgba(231, 76, 60, 0.7)', borderWidth: 1.5, borderDash: [5, 5], pointRadius: 0, fill: false }, { label: '하한(LSL)', data: Array(conf.n).fill(conf.lsl), borderColor: 'rgba(52, 152, 219, 0.7)', borderWidth: 1.5, borderDash: [5, 5], pointRadius: 0, fill: false }, { label: '기준값(Ref)', data: Array(conf.n).fill(conf.ref), borderColor: 'rgba(46, 204, 113, 0.7)', borderWidth: 1.5, pointRadius: 0, fill: false }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: '런 차트', font:{size:18} }, datalabels: { display: false } }, scales: { y: { suggestedMin: conf.lsl - (conf.tolerance * 0.2), suggestedMax: conf.usl + (conf.tolerance * 0.2) } } } });
+        cgkRunCharts[index] = new Chart(ctxRun, { type: 'line', data: { labels: Array.from({length: conf.n}, (_, i) => i + 1), datasets: [{ label: '측정값 (Value)', data: data, borderColor: '#2c3e50', backgroundColor: '#2c3e50', borderWidth: 2, fill: false, tension: 0.1, pointRadius: 3 }, { label: '상한 (USL)', data: Array(conf.n).fill(conf.usl), borderColor: 'rgba(231, 76, 60, 0.7)', borderWidth: 1.5, borderDash: [5, 5], pointRadius: 0, fill: false }, { label: '하한 (LSL)', data: Array(conf.n).fill(conf.lsl), borderColor: 'rgba(52, 152, 219, 0.7)', borderWidth: 1.5, borderDash: [5, 5], pointRadius: 0, fill: false }, { label: '기준값 (Ref)', data: Array(conf.n).fill(conf.ref), borderColor: 'rgba(46, 204, 113, 0.7)', borderWidth: 1.5, pointRadius: 0, fill: false }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: '런 차트 (Run Chart)', font:{size:18} }, datalabels: { display: false } }, scales: { y: { suggestedMin: conf.lsl - (conf.tolerance * 0.2), suggestedMax: conf.usl + (conf.tolerance * 0.2) } } } });
         const histData = createCgkHistogramData(data, 10); const ctxHist = document.getElementById(`histChartCgk_${index}`).getContext('2d'); if (cgkHistCharts[index]) cgkHistCharts[index].destroy();
-        cgkHistCharts[index] = new Chart(ctxHist, { type: 'bar', data: { labels: histData.labels, datasets: [{ label: '도수', data: histData.bins, backgroundColor: 'rgba(52, 152, 219, 0.6)', borderColor: 'rgba(41, 128, 185, 1)', borderWidth: 1, barPercentage: 1.0, categoryPercentage: 1.0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: '히스토그램', font:{size:18} }, datalabels: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } } });
+        cgkHistCharts[index] = new Chart(ctxHist, { type: 'bar', data: { labels: histData.labels, datasets: [{ label: '도수 (Freq)', data: histData.bins, backgroundColor: 'rgba(52, 152, 219, 0.6)', borderColor: 'rgba(41, 128, 185, 1)', borderWidth: 1, barPercentage: 1.0, categoryPercentage: 1.0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: '히스토그램 (Histogram)', font:{size:18} }, datalabels: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } } });
     }
 
     function updateSingleCardCgk(key, index) { const usl = parseFloat(document.getElementById(`usl_cgk_${index}`).value); const lsl = parseFloat(document.getElementById(`lsl_cgk_${index}`).value); if(usl <= lsl) return alert('상한은 하한보다 커야 합니다.'); cgkConfig[key].ref = parseFloat(document.getElementById(`ref_cgk_${index}`).value); cgkConfig[key].usl = usl; cgkConfig[key].lsl = lsl; cgkConfig[key].k = parseFloat(document.getElementById(`k_cgk_${index}`).value); calculateCgkStats(key); updateCgkCardUI(key, index); renderCgkSummaryTable(); }
-    function renderCgkSummaryTable() { const tbody = document.getElementById('summaryTableBodyCgk'); tbody.innerHTML = ''; Object.keys(cgkData).forEach(key => { const conf = cgkConfig[key]; if(conf.mean === undefined) return; tbody.innerHTML += `<tr><td style="font-weight:bold; color:#2c3e50;">${key}</td><td>${conf.n}</td><td>${conf.ref}</td><td>${conf.usl} / ${conf.lsl}</td><td>${conf.mean.toFixed(5)}</td><td>${conf.stdDev.toFixed(5)}</td><td class="${conf.cg >= 1.33 ? 'pass' : 'fail'}">${conf.cg.toFixed(3)}</td><td class="${conf.cgk >= 1.33 ? 'pass' : 'fail'}">${conf.cgk.toFixed(3)}</td><td class="${conf.pass ? 'pass' : 'fail'}">${conf.pass ? '합격' : '불합격'}</td></tr>`; }); }
+    function renderCgkSummaryTable() { const tbody = document.getElementById('summaryTableBodyCgk'); tbody.innerHTML = ''; Object.keys(cgkData).forEach(key => { const conf = cgkConfig[key]; if(conf.mean === undefined) return; tbody.innerHTML += `<tr><td style="font-weight:bold; color:#2c3e50;">${key}</td><td>${conf.n}</td><td>${conf.ref}</td><td>${conf.usl} / ${conf.lsl}</td><td>${conf.mean.toFixed(5)}</td><td>${conf.stdDev.toFixed(5)}</td><td class="${conf.cg >= 1.33 ? 'pass' : 'fail'}">${conf.cg.toFixed(3)}</td><td class="${conf.cgk >= 1.33 ? 'pass' : 'fail'}">${conf.cgk.toFixed(3)}</td><td class="${conf.pass ? 'pass' : 'fail'}">${conf.pass ? '합격 (Pass)' : '불합격 (Fail)'}</td></tr>`; }); }
     function createCgkHistogramData(data, binsCount = 10) { let min = Math.min(...data), max = Math.max(...data); if (min === max) { min -= 0.01; max += 0.01; } let binWidth = (max - min) / binsCount, bins = new Array(binsCount).fill(0), labels = []; for (let i = 0; i < binsCount; i++) labels.push(`${(min + i * binWidth).toFixed(3)}~${(min + (i+1) * binWidth).toFixed(3)}`); for (let i = 0; i < data.length; i++) { let binIndex = Math.floor((data[i] - min) / binWidth); if (binIndex >= binsCount) binIndex = binsCount - 1; bins[binIndex]++; } return { bins, labels }; }
     function toggleViewCgk() { const selected = document.getElementById('viewSelectCgk').value; document.querySelectorAll('#detailDashboardCgk .data-card').forEach(card => { card.style.display = (selected === 'all' || card.getAttribute('data-key') === selected) ? 'block' : 'none'; }); document.getElementById('aiReportAreaCgk').classList.add('hidden'); }
     async function generateAIReportCgk() {}
 
     // ==========================================
-    // 2. CPK 탭 로직 
+    // 2. CPK 탭 로직 (한/영 병기 적용)
     // ==========================================
     let cpkCategories = {}; let cpkRenderTimer = null; 
     const cpkControlConstants = { 2: { d2: 1.128, A2: 1.880, D3: 0, D4: 3.267, E2: 2.660 }, 3: { d2: 1.693, A2: 1.023, D3: 0, D4: 2.574 }, 4: { d2: 2.059, A2: 0.729, D3: 0, D4: 2.282 }, 5: { d2: 2.326, A2: 0.577, D3: 0, D4: 2.114 }, 6: { d2: 2.534, A2: 0.483, D3: 0, D4: 2.004 }, 7: { d2: 2.704, A2: 0.419, D3: 0.076, D4: 1.924 }, 8: { d2: 2.847, A2: 0.373, D3: 0.136, D4: 1.864 }, 9: { d2: 2.970, A2: 0.337, D3: 0.184, D4: 1.816 }, 10: { d2: 3.078, A2: 0.308, D3: 0.223, D4: 1.777 } };
@@ -653,7 +656,7 @@
     });
 
     function updateCategoryDropdownCpk() { 
-        const select = document.getElementById('categorySelectCpk'); select.innerHTML = '<option value="ALL">전체 구분 모아보기</option>'; 
+        const select = document.getElementById('categorySelectCpk'); select.innerHTML = '<option value="ALL">전체 보기 (View All)</option>'; 
         const cats = Object.keys(cpkCategories); cats.forEach(cat => select.appendChild(new Option(cat, cat))); 
         select.disabled = false; 
         if(cats.length > 0) { 
@@ -738,7 +741,7 @@
         const cMin = Math.min(...values, LSL) - (std * 2), cMax = Math.max(...values, USL) + (std * 2); 
         const xCurve = [], yCurve = [], step = (cMax - cMin) / 100; 
         for (let x = cMin; x <= cMax; x += step) { xCurve.push(x); yCurve.push((1 / (std * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow((x - mean) / std, 2))); } 
-        Plotly.newPlot(divId, [ { x: values, type: 'histogram', histnorm: 'probability density', marker: { color: '#4dabf7', line: {color: 'white', width:1} }, opacity: 0.7 }, { x: xCurve, y: yCurve, type: 'scatter', mode: 'lines', line: { color: '#343a40', width: 2 } } ], { title: `<b>[${cat}] 공정능력 히스토그램</b>`, margin: {t:50,b:50,l:80,r:50}, showlegend: false, shapes: [ { type: 'line', x0: LSL, x1: LSL, y0: 0, y1: 1, yref: 'paper', line: { color: 'red', dash: 'dash', width: 2 } }, { type: 'line', x0: USL, x1: USL, y0: 0, y1: 1, yref: 'paper', line: { color: 'red', dash: 'dash', width: 2 } } ] }, { responsive: true, displayModeBar: false }); 
+        Plotly.newPlot(divId, [ { x: values, type: 'histogram', histnorm: 'probability density', marker: { color: '#4dabf7', line: {color: 'white', width:1} }, opacity: 0.7 }, { x: xCurve, y: yCurve, type: 'scatter', mode: 'lines', line: { color: '#343a40', width: 2 } } ], { title: `<b>[${cat}] 공정능력 히스토그램 (Capability Histogram)</b>`, margin: {t:50,b:50,l:80,r:50}, showlegend: false, shapes: [ { type: 'line', x0: LSL, x1: LSL, y0: 0, y1: 1, yref: 'paper', line: { color: 'red', dash: 'dash', width: 2 } }, { type: 'line', x0: USL, x1: USL, y0: 0, y1: 1, yref: 'paper', line: { color: 'red', dash: 'dash', width: 2 } } ] }, { responsive: true, displayModeBar: false }); 
     }
 
     function drawAllCategoriesCpk(dLSL, dUSL) { 
@@ -762,7 +765,7 @@
     async function generateAIReportCpk() {}
 
     // ==========================================
-    // ⭐ 3. Gage R&R 로직 
+    // ⭐ 3. Gage R&R 로직 (한/영 병기 적용)
     // ==========================================
     let grrChartBarInst = null; let grrChartLineInst = null; let grrRawDataCache = null; 
     
@@ -849,20 +852,20 @@
             else if(pctGRR_Tol <= 30) cardTol.style.backgroundColor = "#fff3bf"; 
             else cardTol.style.backgroundColor = "#ffe3e3"; 
         } else {
-            document.getElementById('txt-grr-percent-tol').innerText = "미입력";
+            document.getElementById('txt-grr-percent-tol').innerText = "미입력 (N/A)";
             cardTol.style.backgroundColor = "#f8f9fa";
         }
 
         document.getElementById('txt-grr-ev').innerText = pctEV_TV.toFixed(2) + "%";
-        document.getElementById('sub-ev-base').innerText = hasTol ? `P/T 기준: ${pctEV_Tol.toFixed(2)}%` : "기준: 총 변동(TV)";
+        document.getElementById('sub-ev-base').innerText = hasTol ? `P/T 기준 (Base): ${pctEV_Tol.toFixed(2)}%` : "기준 (Base): 총 변동(TV)";
         document.getElementById('txt-grr-av').innerText = pctAV_TV.toFixed(2) + "%";
-        document.getElementById('sub-av-base').innerText = hasTol ? `P/T 기준: ${pctAV_Tol.toFixed(2)}%` : "기준: 총 변동(TV)";
+        document.getElementById('sub-av-base').innerText = hasTol ? `P/T 기준 (Base): ${pctAV_Tol.toFixed(2)}%` : "기준 (Base): 총 변동(TV)";
         
         document.getElementById('txt-grr-ndc').innerText = ndc;
         document.getElementById('card-grr-ndc').className = "metric-card " + (ndc >= 5 ? "success" : "danger");
 
         if(grrChartBarInst) grrChartBarInst.destroy();
-        grrChartBarInst = new Chart(document.getElementById('grrChartBar'), { type: 'bar', data: { labels: ['%GR&R', '%EV(반복성)', '%AV(재현성)', '%PV(부품변동)'], datasets: [{ label: '총 변동 대비 비율(%TV)', data: [pctGRR_TV, pctEV_TV, pctAV_TV, pctPV_TV], backgroundColor: ['#e74c3c', '#f39c12', '#f1c40f', '#3498db'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { title: {display:true, text:'분산 성분 (Components of Variation - %TV 기준)'}, datalabels: {display:true, formatter: v => v.toFixed(1)+'%', anchor:'end', align:'top'} }, scales: {y: {beginAtZero: true}} } });
+        grrChartBarInst = new Chart(document.getElementById('grrChartBar'), { type: 'bar', data: { labels: ['%GR&R', '%EV(반복성)', '%AV(재현성)', '%PV(부품변동)'], datasets: [{ label: '총 변동 대비 비율 (%TV)', data: [pctGRR_TV, pctEV_TV, pctAV_TV, pctPV_TV], backgroundColor: ['#e74c3c', '#f39c12', '#f1c40f', '#3498db'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { title: {display:true, text:'분산 성분 (Components of Variation - %TV 기준)'}, datalabels: {display:true, formatter: v => v.toFixed(1)+'%', anchor:'end', align:'top'} }, scales: {y: {beginAtZero: true}} } });
 
         if(grrChartLineInst) grrChartLineInst.destroy();
         let datasetsLine = appraisers.map((op, i) => {
@@ -1059,7 +1062,6 @@
             let tr = document.createElement('tr'); let color = '#2c3e50';
             if(d.type && d.type.includes('Man')) color = '#2980b9'; else if(d.type && d.type.includes('Machine')) color = '#e67e22'; else if(d.type && d.type.includes('Material')) color = '#8e44ad'; else if(d.type && d.type.includes('Method')) color = '#27ae60';
             
-            // ✨ 수정 및 삭제 버튼을 가로 정렬 컨테이너(action-buttons)로 감싸 적용
             tr.innerHTML = `<td>${formatDateSafe(d.date)}</td><td>${d.year}</td><td>${d.project}</td><td style="color: ${color}; font-weight: 900;">${d.type}</td><td style="text-align: left;">${d.desc}</td>
             <td class="no-print">
                 <div class="action-buttons">
@@ -1091,7 +1093,6 @@
         filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(d => {
             let tr = document.createElement('tr');
             
-            // ✨ 수정 및 삭제 버튼을 가로 정렬 컨테이너(action-buttons)로 감싸 적용
             tr.innerHTML = `<td>${formatDateSafe(d.ncrDate)}</td><td>${formatDateSafe(d.date)}</td><td>${d.year}</td><td style="color: #2980b9;">${d.project}</td><td>${d.customer}</td><td style="color: #c0392b; font-weight: 900;">${d.defect}</td>
                 <td class="no-print">
                     <div class="action-buttons">
@@ -1289,7 +1290,6 @@
                     }
                 }
                 
-                // ✨ 수정 및 삭제 버튼을 가로 정렬 컨테이너(action-buttons)로 감싸 적용
                 tr.innerHTML = `<td style="color: ${typeColor}; font-weight: 900;">${d.type}</td><td style="font-weight: bold;">${d.docNo}</td><td style="font-weight: bold; text-align: left;">${d.name}</td><td>Rev. ${d.rev}</td><td>${formatDateSafe(d.date)}</td><td style="text-align: left; color: #495057;">${d.reason}</td><td>${fileHTML}</td>
                 <td class="no-print">
                     <div class="action-buttons">
@@ -1557,7 +1557,6 @@
                 }
             }
 
-            // ✨ 수정 및 삭제 버튼을 가로 정렬 컨테이너(action-buttons)로 감싸 적용
             tr.innerHTML = `<td style="font-weight: 900; color: #8e44ad;">${d.instCode || '-'}</td><td style="font-weight: 900; color: #2c3e50;">${d.name || '-'}</td><td>${d.spec || '-'}</td><td style="color: #2980b9;">${d.instNo || '-'}</td><td>${formatMonthSafe(d.purchase)}</td><td>${d.qty || '1'}</td><td style="color: #16a085;">${d.cycle || '-'}</td><td>${formatDateSafe(d.lastCal)}</td><td style="${dateStyle}">${formatDateSafe(d.nextCal)}</td><td style="${dateStyle}">${remainHtml}</td><td style="text-align: left; font-weight:normal;">${d.remark || '-'}</td><td>${fileHTML}</td>
                 <td class="no-print">
                     <div class="action-buttons">
