@@ -802,6 +802,7 @@ End Sub</pre>
     const ENC_PW = [110, 104, 106, 105]; const XOR_KEY = 0x5A;
     function verifyPassword(input) { if (!input || input.length !== ENC_PW.length) return false; let isValid = true; for (let i = 0; i < input.length; i++) if ((input.charCodeAt(i) ^ XOR_KEY) !== ENC_PW[i]) isValid = false; return isValid; }
     function checkPassword() { const pwd = document.getElementById('passwordInput').value; if (verifyPassword(pwd)) document.getElementById('loginOverlay').style.display = 'none'; else { showToast('비밀번호가 일치하지 않습니다.'); document.getElementById('passwordInput').value = ''; } }
+    function quickUnlockDashboard() { document.getElementById('loginOverlay').style.display = 'none'; showToast('QMS 시트별 자동연동 대시보드에 입장했습니다.'); }
     document.getElementById('passwordInput').addEventListener('keypress', e => { if (e.key === 'Enter') checkPassword(); });
 
     function requireAuth(callback, actionName) {
@@ -840,7 +841,8 @@ End Sub</pre>
     let qmsActiveSheetId = qmsWorkbookSheets.length > 0 ? qmsWorkbookSheets[0].id : null;
 
     window.addEventListener('load', () => {
-        document.getElementById('loginOverlay').style.display = 'none';
+        const pwInput = document.getElementById('passwordInput');
+        if (pwInput) pwInput.focus();
         initRichEditorPaste();
         initQmsSheetSystem();
         init4MTab();
