@@ -1345,7 +1345,7 @@ End Sub</pre>
         }
         const heading = document.getElementById('qmsDocListHeading');
         if (heading) {
-            heading.innerHTML = `📋 문서/양식 이력 목록 <span style="font-size:15px; color:#1565c0; font-weight:normal;">(프로세스 <b>${validProcCount}건</b> + 품질양식 <b>${validFormCount}건</b> = <b>총 ${validTotalCount}건</b> <span style="color:#e67e22; font-weight:bold;">[표지·목차 제외]</span>)</span>`;
+            heading.innerHTML = `📋 문서/양식 이력 목록 <span style="font-size:15px; color:#1565c0; font-weight:normal;">(프로세스 <b>${validProcCount}건</b> + 품질양식 <b>${validFormCount}건</b> = <b>총 ${validTotalCount}건</b> <span style="color:#e67e22; font-weight:bold;">)</span>`;
         }
     }
 
@@ -1522,7 +1522,7 @@ End Sub</pre>
 
         const rowProc = document.createElement('div');
         rowProc.className = 'qms-cat-row';
-        rowProc.innerHTML = `<span class="qms-cat-row-label proc">📘 1. 품질프로세스 표준서</span>`;
+        rowProc.innerHTML = `<span class="qms-cat-row-label proc">📘 1. 품질프로세스 </span>`;
         procCategories.forEach(cat => {
             const btn = document.createElement('button');
             btn.className = 'qms-cat-pill' + (qmsActiveCategory === cat.key ? ' active' : '');
@@ -1539,7 +1539,7 @@ End Sub</pre>
         rowForm.className = 'qms-cat-row';
         rowForm.style.borderTop = '1px dashed #cbd5e1';
         rowForm.style.paddingTop = '8px';
-        rowForm.innerHTML = `<span class="qms-cat-row-label form">📋 2. 품질양식 표준서</span>`;
+        rowForm.innerHTML = `<span class="qms-cat-row-label form">📋 2. 품질양식 </span>`;
         formCategories.forEach(cat => {
             const btn = document.createElement('button');
             const isActive = (qmsActiveCategory === cat.key);
@@ -3179,7 +3179,7 @@ End Sub</pre>
                         plugins: {
                             title: {
                                 display: true,
-                                text: `QMS 프로세스 표준문서 구분별 현황 (총 ${chartDocs.length}건 · 품질양식 및 표지·목차 제외)`,
+                                text: `QMS 프로세스 표준문서 구분별 현황 (총 ${chartDocs.length}건)`,
                                 font: { size: 15, weight: 'bold' }
                             },
                             legend: { position: 'bottom' },
