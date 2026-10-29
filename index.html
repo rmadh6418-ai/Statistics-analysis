@@ -214,7 +214,7 @@
     <div class="custom-modal-box" style="max-width: 420px; text-align: center;">
         <h3 id="customDialogTitle" style="margin-top:0; color:#2c3e50;">알림</h3>
         <p id="customDialogMessage" style="color:#495057; font-size:14.5px; line-height:1.5; margin-bottom:18px;"></p>
-        <input type="password" id="customDialogInput" class="hidden" placeholder="관리자 비밀번호 입력 (4203)" style="width:100%; padding:10px; border:1px solid #ced4da; border-radius:6px; margin-bottom:16px; text-align:center; font-weight:bold;">
+        <input type="password" id="customDialogInput" class="hidden" placeholder="관리자 암호 입력" style="width:100%; padding:10px; border:1px solid #ced4da; border-radius:6px; margin-bottom:16px; text-align:center; font-weight:bold;">
         <div style="display:flex; gap:10px; justify-content:center;">
             <button id="customDialogConfirmBtn" class="action-btn" style="background:#228be6; flex:1;">확인</button>
             <button id="customDialogCancelBtn" class="action-btn" style="background:#868e96; flex:1;" onclick="closeCustomDialog()">취소</button>
@@ -292,10 +292,23 @@ End Sub</pre>
 </div>
 
 <div id="loginOverlay">
-    <div class="login-box">
-        <h2>🔒 보안 접속</h2>
-        <input type="password" id="passwordInput" placeholder="비밀번호 입력">
-        <button onclick="checkPassword()">대시보드 입장</button>
+    <div class="login-box" style="width: 360px; max-width: 90%; text-align: center; background: white; padding: 36px 28px; border-radius: 14px; box-shadow: 0 15px 35px rgba(0,0,0,0.2);">
+        <div style="font-size: 36px; margin-bottom: 8px;">🔒</div>
+        <h2 style="margin: 0 0 6px 0; color: #1e293b; font-size: 22px; font-weight: 900;">대시보드 보안 접속</h2>
+        <p style="font-size: 13.5px; color: #64748b; margin: 0 0 20px 0; font-weight: normal; line-height: 1.5;">제조 품질 통합 대시보드 접근을 위해<br>보안 접속 암호를 입력해주세요.</p>
+        
+        <form onsubmit="event.preventDefault(); checkPassword();" style="margin: 0;">
+            <div style="position: relative; margin-bottom: 12px;">
+                <input type="password" id="passwordInput" placeholder="접속 암호 입력" autocomplete="current-password"
+                       style="width: 100%; padding: 13px 44px 13px 14px; border: 2px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; text-align: center; font-size: 17px; font-weight: 900; letter-spacing: 2px; transition: border-color 0.2s;">
+                <button type="button" id="btnToggleShowPw" onclick="togglePasswordVisibility()" 
+                        style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 18px; color: #64748b; padding: 6px; width: auto; margin: 0; line-height: 1;" title="비밀번호 표시/숨기기">👁️</button>
+            </div>
+            
+            <div id="loginErrorMsg" style="color: #ef4444; font-size: 13.5px; margin-bottom: 12px; display: none; font-weight: bold; background: #fee2e2; padding: 9px; border-radius: 6px; border: 1px solid #fca5a5;"></div>
+            
+            <button type="submit" id="btnLoginSubmit" style="width: 100%; padding: 13px; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 900; font-size: 16px; transition: background 0.2s; box-shadow: 0 2px 4px rgba(37,99,235,0.25);">대시보드 입장</button>
+        </form>
     </div>
 </div>
 
@@ -717,7 +730,7 @@ End Sub</pre>
     }
     function prompt(msg) {
         showToast(msg);
-        return "4203";
+        return "";
     }
     function openConfirmModal(title, msg, onConfirm) {
         document.getElementById('customDialogTitle').innerText = title;
@@ -800,11 +813,84 @@ End Sub</pre>
         Chart.defaults.plugins.datalabels = { display: false, color: '#333', font: { weight: 'bold', size: 14 } };
     }
 
-    const ENC_PW = [110, 104, 106, 105]; const XOR_KEY = 0x5A;
-    function verifyPassword(input) { if (!input || input.length !== ENC_PW.length) return false; let isValid = true; for (let i = 0; i < input.length; i++) if ((input.charCodeAt(i) ^ XOR_KEY) !== ENC_PW[i]) isValid = false; return isValid; }
-    function checkPassword() { const pwd = document.getElementById('passwordInput').value; if (verifyPassword(pwd)) document.getElementById('loginOverlay').style.display = 'none'; else { showToast('비밀번호가 일치하지 않습니다.'); document.getElementById('passwordInput').value = ''; } }
-    function quickUnlockDashboard() { document.getElementById('loginOverlay').style.display = 'none'; showToast('QMS 시트별 자동연동 대시보드에 입장했습니다.'); }
-    document.getElementById('passwordInput').addEventListener('keypress', e => { if (e.key === 'Enter') checkPassword(); });
+    // ⭐ 보안 비트연산(XOR) 암호 검증 엔진 (평문 패스워드 미노출)
+    const ENC_PW = [110, 104, 106, 105]; 
+    const XOR_KEY = 0x5A;
+
+    function normalizePassword(str) {
+        if (!str) return '';
+        return String(str)
+            .trim()
+            .replace(/[\uFF10-\uFF19]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0)); // 전각 숫자 정제
+    }
+
+    function verifyPassword(input) {
+        const clean = normalizePassword(input);
+        if (!clean || clean.length !== ENC_PW.length) return false;
+        for (let i = 0; i < clean.length; i++) {
+            if ((clean.charCodeAt(i) ^ XOR_KEY) !== ENC_PW[i]) return false;
+        }
+        return true;
+    }
+
+    function checkPassword() {
+        const inp = document.getElementById('passwordInput');
+        const errBox = document.getElementById('loginErrorMsg');
+        const pwd = inp ? inp.value : '';
+
+        if (verifyPassword(pwd)) {
+            if (errBox) errBox.style.display = 'none';
+            const overlay = document.getElementById('loginOverlay');
+            if (overlay) {
+                overlay.style.display = 'none';
+            }
+            showToast('보안 인증이 완료되었습니다.');
+        } else {
+            if (errBox) {
+                errBox.innerText = '접속 암호가 일치하지 않습니다. 다시 입력해주세요.';
+                errBox.style.display = 'block';
+            }
+            showToast('접속 암호가 일치하지 않습니다.');
+            if (inp) {
+                inp.style.borderColor = '#ef4444';
+                inp.value = '';
+                inp.focus();
+            }
+        }
+    }
+
+    function togglePasswordVisibility() {
+        const inp = document.getElementById('passwordInput');
+        const btn = document.getElementById('btnToggleShowPw');
+        if (!inp) return;
+        if (inp.type === 'password') {
+            inp.type = 'text';
+            if (btn) btn.innerText = '🙈';
+        } else {
+            inp.type = 'password';
+            if (btn) btn.innerText = '👁️';
+        }
+    }
+
+    function quickUnlockDashboard() { 
+        const overlay = document.getElementById('loginOverlay');
+        if (overlay) overlay.style.display = 'none'; 
+        showToast('대시보드에 입장했습니다.'); 
+    }
+
+    // 키보드 이벤트 리스너: Enter 키 지원 (form submit 및 keydown 동시 지원)
+    const pwInputEl = document.getElementById('passwordInput');
+    if (pwInputEl) {
+        pwInputEl.addEventListener('keydown', e => {
+            const errBox = document.getElementById('loginErrorMsg');
+            if (errBox) errBox.style.display = 'none';
+            pwInputEl.style.borderColor = '#cbd5e1';
+            if (e.key === 'Enter' || e.keyCode === 13) {
+                e.preventDefault();
+                checkPassword();
+            }
+        });
+    }
 
     function requireAuth(callback, actionName) {
         document.getElementById('customDialogTitle').innerText = `🔒 [${actionName}] 관리자 인증`;
