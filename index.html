@@ -554,7 +554,7 @@ End Sub</pre>
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:12px;" class="no-print">
                 <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; cursor:pointer;" onclick="toggleQmsViewerSection()" title="클릭하여 시트열람 영역을 접거나 펼칩니다">
                     <span id="qmsViewerMainArrow" style="font-size:18px; color:#1565c0; font-weight:900; transition:transform 0.2s;">▼</span>
-                    <h3 style="margin:0; color:#2c3e50; font-size:19px;">🗂️ 시트별 표준서 &amp; 품질양식 통합 시트열람 <span id="qmsSheetCountLabel" style="color:#3498db; font-size:15px;">
+                    <h3 style="margin:0; color:#2c3e50; font-size:19px;">🗂️ 시트별 표준서 &amp; 품질양식 통합 시트열람 <span id="qmsSheetCountLabel" style="color:#3498db; font-size:15px;">(상단: 품질프로세스 47개 / 하단: 품질양식 68개)</span></h3>
                 </div>
                 <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                     <button type="button" id="btnToggleQmsViewer" class="qms-collapse-btn" onclick="toggleQmsViewerSection()">🔼 시트열람 전체 접기</button>
@@ -616,7 +616,7 @@ End Sub</pre>
                 <button class="action-btn no-print" type="button" style="background:#64748b; font-size:13px;" onclick="restoreDeletedQmsSheets()" title="초기에 삭제된 표지/목차 및 기본 시트를 원상 복원합니다">↺ 삭제된 기본 문서 복원</button>
             </div>
         </div>
-        <h3 id="qmsDocListHeading" style="margin-top: 10px; color: #2c3e50; font-size: 20px;">📋 문서/양식 이력 목록</h3>
+        <h3 id="qmsDocListHeading" style="margin-top: 10px; color: #2c3e50; font-size: 20px;">📋 문서/양식 이력 목록 (프로세스 45건 + 품질양식 67건 = 총 112건 [표지·목차 제외])</h3>
         
         <div class="chart-row" style="justify-content: center; margin-bottom: 20px;">
             <div class="chart-box" style="height: 350px; max-width: 550px; width: 100%;">
@@ -1251,7 +1251,7 @@ End Sub</pre>
 
         const badge = document.getElementById('qmsSyncStatusBadge');
         if (badge) {
-            badge.innerHTML = `✅ 프로세스 표준서(<b>${validProcCount}개</b>) + 품질양식(<b>${validFormCount}개</b>) = <b>총 ${validTotalCount}개 유효 연동</b> <small style="color:#d97706; font-weight:bold;">`;
+            badge.innerHTML = `✅ 프로세스 표준서(<b>${validProcCount}개</b>) + 품질양식(<b>${validFormCount}개</b>) = <b>총 ${validTotalCount}개 유효 연동</b> <small style="color:#d97706; font-weight:bold;">(표지·목차 계산 제외)</small>`;
         }
         const countLabel = document.getElementById('qmsSheetCountLabel');
         if (countLabel) {
@@ -1259,7 +1259,7 @@ End Sub</pre>
         }
         const heading = document.getElementById('qmsDocListHeading');
         if (heading) {
-            heading.innerHTML = `📋 문서/양식 이력 목록 <span style="font-size:15px; color:#1565c0; font-weight:normal;">
+            heading.innerHTML = `📋 문서/양식 이력 목록 <span style="font-size:15px; color:#1565c0; font-weight:normal;">(프로세스 <b>${validProcCount}건</b> + 품질양식 <b>${validFormCount}건</b> = <b>총 ${validTotalCount}건</b> <span style="color:#e67e22; font-weight:bold;">[표지·목차 제외]</span>)</span>`;
         }
     }
 
@@ -1453,7 +1453,7 @@ End Sub</pre>
         rowForm.className = 'qms-cat-row';
         rowForm.style.borderTop = '1px dashed #cbd5e1';
         rowForm.style.paddingTop = '8px';
-        rowForm.innerHTML = `<span class="qms-cat-row-label form">📋 2. 품질양식 표준서</span>`;
+        rowForm.innerHTML = `<span class="qms-cat-row-label form">📋 2. 품질양식 표준서 (하단)</span>`;
         formCategories.forEach(cat => {
             const btn = document.createElement('button');
             const isActive = (qmsActiveCategory === cat.key);
@@ -1583,7 +1583,7 @@ End Sub</pre>
             const hdrForm = document.createElement('div');
             hdrForm.className = 'qms-sheet-group-header form';
             hdrForm.onclick = () => toggleQmsGroupSection('FORM');
-            hdrForm.innerHTML = `<span>📋 [하단] 품질양식 표준서 시트 (${formSheets.length}개)</span><span style="font-size:12.5px; color:#15803d;">${isQmsFormGroupCollapsed ? '🔽 목록 펼치기' : '🔼 목록 접기'}</span>`;
+            hdrForm.innerHTML = `<span>📋 [하단] 품질양식 표준서 시트 (${formSheets.length}개 — 품질프로세스 아래 배치)</span><span style="font-size:12.5px; color:#15803d;">${isQmsFormGroupCollapsed ? '🔽 목록 펼치기' : '🔼 목록 접기'}</span>`;
             secForm.appendChild(hdrForm);
 
             if (!isQmsFormGroupCollapsed) {
@@ -2994,13 +2994,13 @@ End Sub</pre>
                 if (!isForm && !insertedProcBanner && procCount > 0) {
                     insertedProcBanner = true;
                     const bannerTr = document.createElement('tr');
-                    bannerTr.innerHTML = `<td colspan="8" style="background:#dbeafe; color:#1e3a8a; font-weight:900; text-align:left; padding:10px 16px; font-size:14.5px; border-top:2px solid #3b82f6;">📘 [상단] 품질프로세스 표준서 목록 (총 ${procCount}건)</td>`;
+                    bannerTr.innerHTML = `<td colspan="8" style="background:#dbeafe; color:#1e3a8a; font-weight:900; text-align:left; padding:10px 16px; font-size:14.5px; border-top:2px solid #3b82f6;">📘 [상단] 품질프로세스 표준서 목록 (총 ${procCount}건 · 표지/목차 제외)</td>`;
                     tbody.appendChild(bannerTr);
                 }
                 if (isForm && !insertedFormBanner && formCount > 0) {
                     insertedFormBanner = true;
                     const bannerTr = document.createElement('tr');
-                    bannerTr.innerHTML = `<td colspan="8" style="background:#dcfce7; color:#14532d; font-weight:900; text-align:left; padding:10px 16px; font-size:14.5px; border-top:2px solid #22c55e;">📋 [하단] 품질양식 표준서 목록 (총 ${formCount}건)</td>`;
+                    bannerTr.innerHTML = `<td colspan="8" style="background:#dcfce7; color:#14532d; font-weight:900; text-align:left; padding:10px 16px; font-size:14.5px; border-top:2px solid #22c55e;">📋 [하단] 품질양식 표준서 목록 (총 ${formCount}건 — 품질프로세스 아래 배치 · 목차 제외)</td>`;
                     tbody.appendChild(bannerTr);
                 }
 
@@ -3073,7 +3073,7 @@ End Sub</pre>
                     options: {
                         responsive: true, maintainAspectRatio: false,
                         plugins: {
-                            title: { display: true, text: 'QMS 프로세스 표준문서 구분별 현황', font: { size: 14 } },
+                            title: { display: true, text: 'QMS 프로세스 표준문서 구분별 현황 (품질양식 및 표지·목차 제외됨 - 표시할 프로세스 문서 없음)', font: { size: 14 } },
                             datalabels: { display: false }
                         }
                     }
